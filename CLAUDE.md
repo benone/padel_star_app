@@ -38,6 +38,7 @@ npm run web       # Web browser
 3. **Follow file-based routing** - put screens in `/app`
 4. **Use Tailwind for CSS** (needs to be set up)
 5. **Create reusable components** in `/components`
+6. **Use @ notation for all imports**
 
 ## Adding New Stuff
 - **New screen**: Add file in `/app` directory
