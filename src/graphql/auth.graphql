@@ -1,0 +1,49 @@
+mutation SendTelegramVerificationCode($phoneNumber: String!) {
+  sendTelegramVerificationCode(input: { phoneNumber: $phoneNumber }) {
+    success
+    message
+    requestId
+    error
+  }
+}
+
+mutation VerifyTelegramCode($phoneNumber: String!, $code: String!, $requestId: String) {
+  verifyTelegramCode(input: { phoneNumber: $phoneNumber, code: $code, requestId: $requestId }) {
+    success
+    player {
+      id
+      name
+      email
+      phone
+      avatarUrl
+      level
+      levelName
+      age
+      address
+      createdAt
+    }
+    token
+    error
+    details
+  }
+}
+
+mutation LoginPlayer($email: String!, $password: String!) {
+  loginPlayer(input: { email: $email, password: $password }) {
+    player {
+      id
+      name
+      email
+      phone
+      avatarUrl
+      level
+      levelName
+      age
+      address
+      createdAt
+    }
+    token
+    refreshToken
+    errors
+  }
+}

@@ -1,0 +1,27 @@
+overwrite: true
+schema: https://api.padelstarclub.ru/graphql
+documents: 
+  - "src/graphql/**/*.graphql"
+generates:
+  ./graphql.schema.json:
+    plugins:
+      - introspection
+    config:
+      minify: false
+  src/generated/graphql.tsx:
+    plugins:
+      - typescript
+      - typescript-operations
+      - typescript-react-apollo
+    config:
+      withHooks: true
+      withHOC: false
+      withComponent: false
+      skipTypename: false
+      enumsAsTypes: true
+      apolloReactCommonImportFrom: "@apollo/client"
+      scalars:
+        DateTime: string
+        Date: string
+        JSON: any
+        ISO8601Date: string

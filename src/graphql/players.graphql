@@ -1,0 +1,43 @@
+query GetPlayers {
+  players {
+    id
+    name
+    email
+    phone
+    avatarUrl
+    level
+    levelName
+    createdAt
+  }
+}
+
+query GetPlayer($id: ID!) {
+  player(id: $id) {
+    id
+    name
+    email
+    phone
+    avatarUrl
+    level
+    levelName
+    age
+    address
+    createdAt
+    updatedAt
+  }
+}
+
+query GetCurrentPlayer {
+  currentPlayer {
+    id
+    name
+    email
+    phone
+    avatarUrl
+    level
+    levelName
+    age
+    address
+    createdAt
+  }
+}

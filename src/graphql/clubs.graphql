@@ -1,0 +1,72 @@
+query GetClubs {
+  clubs {
+    id
+    name
+    city
+    district
+    description
+    imagesUrls
+    amenities
+    rating
+    reviewCount
+    courts {
+      id
+      name
+      surface
+      indoor
+    }
+    workingHours
+  }
+}
+
+query GetClub($id: ID!) {
+  club(id: $id) {
+    id
+    name
+    city
+    district
+    country
+    postalCode
+    description
+    imagesUrls
+    amenities
+    phone
+    email
+    rating
+    reviewCount
+    latitude
+    longitude
+    courts {
+      id
+      name
+      surface
+      indoor
+    }
+    workingHours
+    reviews {
+      id
+      rating
+      content
+      player {
+        id
+        name
+        avatarUrl
+      }
+      createdAt
+    }
+  }
+}
+
+query GetDefaultClub {
+  defaultClub {
+    id
+    name
+    city
+    description
+    imagesUrls
+    courts {
+      id
+      name
+    }
+  }
+}
