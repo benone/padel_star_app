@@ -1,17 +1,18 @@
+import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
+import GraduationCapIcon from '@/components/icons/GraduationCapIcon';
 import Banner from '@/components/ui/Banner';
 import CardWithImage from '@/components/ui/HomePage/CardWithImage';
 import SmallCard from '@/components/ui/HomePage/SmallCard';
 import TopBar from '@/components/ui/TopBar';
-import GraduationCapIcon from '@/components/icons/GraduationCapIcon';
 
 export default function Home() {
   return (
     <View
-      className="bg-white flex-1 rounded-lg shadow-lg"
+      className="flex-1 bg-white rounded-lg shadow-lg"
       data-name="Screens/Home"
     >
       <StatusBar style="light" />
@@ -22,7 +23,7 @@ export default function Home() {
           <TopBar
             welcomeText="Привет, Кирилл 👋"
             onNotificationPress={() => console.log('Notification pressed')}
-            onMenuPress={() => console.log('Menu pressed')}
+            onMenuPress={() => router.push('/system-preview')}
           />
 
           {/* Main Content */}

@@ -12,7 +12,7 @@ Use this guide to sync Figma designs with the project codebase.
 - Make all buttons clickable
 - DO NOT import/add new icon packages, all the assets should be in the Figma payload
 - do NOT use or create placeholders if a localhost source is provided
-
+- Don't add absolute positioning if Figma doesn't
 ---
 
 ## Screen Sync
@@ -22,6 +22,7 @@ Recreate screens using components from Figma and existing code.
 1. Open the screen node in Figma.
 2. Get the screen’s `data-name` (e.g. `Screens/Home`) → maps to `app/Screens/Home.tsx`.
 3. Find or create the corresponding file.
+4. Add screen to system-preview.tsx if it isn't present.
 
 ### Use Components:
 Check every node with data-name and find corresponding component (UI/..).

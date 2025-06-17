@@ -1,60 +1,44 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StatusBar, Modal, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import React, { useState } from 'react';
+import { Modal, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 // Import all screens
 import Home from './Screens/Home';
 import Login from './Screens/Login';
-import TabTwoScreen from './(tabs)/explore';
-import ProfileScreen from './(tabs)/profile';
+
+// Simple wrapper for Explore screen to avoid navigation context issues
+const ExploreWrapper = () => (
+  <View className="items-center justify-center flex-1 bg-gray-100">
+    <Text className="mb-4 text-2xl font-bold text-gray-800">Explore Screen</Text>
+    <Text className="px-8 text-center text-gray-600">
+      This is the Explore tab screen. It uses ParallaxScrollView which requires
+      Bottom Tab Navigator context to display properly.
+    </Text>
+  </View>
+);
+
+// Simple wrapper for Profile screen
+const ProfileWrapper = () => (
+  <View className="items-center justify-center flex-1 bg-gray-100">
+    <Text className="mb-4 text-2xl font-bold text-gray-800">Profile Screen</Text>
+    <Text className="px-8 text-center text-gray-600">
+      This is the Profile tab screen. It also uses ParallaxScrollView which requires
+      Bottom Tab Navigator context to display properly.
+    </Text>
+  </View>
+);
 
 interface ScreenInfo {
   name: string;
   component: React.ComponentType;
-  description: string;
-  status: 'complete' | 'in-progress' | 'planned';
 }
 
 const screens: ScreenInfo[] = [
-  {
-    name: 'Login',
-    component: Login,
-    description: 'Phone number authentication screen',
-    status: 'complete'
-  },
-  {
-    name: 'Home',
-    component: Home,
-    description: 'Main dashboard with court booking and matches',
-    status: 'complete'
-  },
-  {
-    name: 'Explore',
-    component: TabTwoScreen,
-    description: 'Discovery and information screen',
-    status: 'complete'
-  },
-  {
-    name: 'Profile',
-    component: ProfileScreen,
-    description: 'User profile and settings',
-    status: 'complete'
-  }
+  { name: 'Login', component: Login },
+  { name: 'Home', component: Home },
+  { name: 'Explore', component: ExploreWrapper },
+  { name: 'Profile', component: ProfileWrapper }
 ];
-
-const StatusBadge = ({ status }: { status: string }) => {
-  const colors = {
-    complete: 'bg-green-500',
-    'in-progress': 'bg-yellow-500',
-    planned: 'bg-gray-400'
-  };
-  
-  return (
-    <View className={`${colors[status as keyof typeof colors]} px-2 py-1 rounded-full`}>
-      <Text className="text-white text-xs font-medium">{status}</Text>
-    </View>
-  );
-};
 
 export default function SystemPreview() {
   const [selectedScreen, setSelectedScreen] = useState<ScreenInfo | null>(null);
@@ -71,76 +55,26 @@ export default function SystemPreview() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
-      <StatusBar barStyle="dark-content" backgroundColor="#f9fafb" />
-      
+    <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
-      <View className="bg-white border-b border-gray-200 px-6 py-4">
-        <View className="flex-row items-center justify-between">
-          <View>
-            <Text className="text-2xl font-bold text-gray-900">System Preview</Text>
-            <Text className="text-sm text-gray-600 mt-1">All app screens overview</Text>
-          </View>
-          <View className="bg-blue-100 px-3 py-2 rounded-lg">
-            <Text className="text-blue-800 font-medium">{screens.length} Screens</Text>
-          </View>
-        </View>
+      <View className="px-4 py-4 border-b border-gray-200">
+        <Text className="text-xl font-bold text-gray-900">Screens Preview</Text>
       </View>
 
-      {/* Stats Cards */}
-      <View className="px-6 py-4">
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="gap-4">
-          <View className="bg-white rounded-xl p-4 border border-gray-200 mr-3 min-w-[120px]">
-            <Text className="text-2xl font-bold text-green-600">
-              {screens.filter(s => s.status === 'complete').length}
-            </Text>
-            <Text className="text-gray-600 text-sm">Complete</Text>
-          </View>
-          <View className="bg-white rounded-xl p-4 border border-gray-200 mr-3 min-w-[120px]">
-            <Text className="text-2xl font-bold text-yellow-600">
-              {screens.filter(s => s.status === 'in-progress').length}
-            </Text>
-            <Text className="text-gray-600 text-sm">In Progress</Text>
-          </View>
-          <View className="bg-white rounded-xl p-4 border border-gray-200 mr-3 min-w-[120px]">
-            <Text className="text-2xl font-bold text-gray-600">
-              {screens.filter(s => s.status === 'planned').length}
-            </Text>
-            <Text className="text-gray-600 text-sm">Planned</Text>
-          </View>
-        </ScrollView>
-      </View>
-
-      {/* Screens Grid */}
-      <ScrollView className="flex-1 px-6">
-        <View className="gap-4 pb-8">
+      {/* Screens List */}
+      <ScrollView className="flex-1">
+        <View className="gap-3 p-4">
           {screens.map((screen, index) => (
             <TouchableOpacity
               key={index}
-              className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm"
+              className="p-4 border border-gray-200 rounded-lg bg-gray-50"
               onPress={() => openScreen(screen)}
             >
-              <View className="flex-row items-start justify-between mb-3">
-                <View className="flex-1">
-                  <Text className="text-lg font-bold text-gray-900 mb-1">
-                    {screen.name}
-                  </Text>
-                  <Text className="text-gray-600 text-sm leading-5">
-                    {screen.description}
-                  </Text>
-                </View>
-                <StatusBadge status={screen.status} />
-              </View>
-              
               <View className="flex-row items-center justify-between">
-                <View className="flex-row items-center">
-                  <Ionicons name="phone-portrait-outline" size={16} color="#6B7280" />
-                  <Text className="text-gray-500 text-xs ml-1">React Native</Text>
-                </View>
-                <View className="flex-row items-center">
-                  <Text className="text-blue-600 text-sm font-medium mr-1">Preview</Text>
-                  <Ionicons name="chevron-forward" size={16} color="#2563EB" />
-                </View>
+                <Text className="text-lg font-semibold text-gray-900">
+                  {screen.name}
+                </Text>
+                <Ionicons name="chevron-forward" size={20} color="#6B7280" />
               </View>
             </TouchableOpacity>
           ))}
@@ -153,29 +87,20 @@ export default function SystemPreview() {
         animationType="slide"
         presentationStyle="fullScreen"
       >
-        <SafeAreaView className="flex-1 bg-black">
-          {/* Modal Header */}
-          <View className="bg-gray-900 px-4 py-3 flex-row items-center justify-between">
-            <View className="flex-row items-center">
-              <TouchableOpacity
-                onPress={closeModal}
-                className="mr-4 p-2 -ml-2"
-              >
-                <Ionicons name="close" size={24} color="white" />
-              </TouchableOpacity>
-              <Text className="text-white text-lg font-medium">
-                {selectedScreen?.name}
-              </Text>
-            </View>
-            <StatusBadge status={selectedScreen?.status || 'complete'} />
+        <SafeAreaView className="flex-1">
+          {/* Screen Preview */}
+          <View className="flex-1">
+            {selectedScreen && <selectedScreen.component />}
           </View>
 
-          {/* Screen Preview */}
-          <View className="flex-1 bg-white">
-            {selectedScreen && (
-              <selectedScreen.component />
-            )}
-          </View>
+          {/* Floating Return Button */}
+          <TouchableOpacity 
+            onPress={closeModal} 
+            className="absolute top-12 right-4 bg-black/50 rounded-full p-3 z-10"
+            style={{ opacity: 0.7 }}
+          >
+            <Ionicons name="close" size={24} color="white" />
+          </TouchableOpacity>
         </SafeAreaView>
       </Modal>
     </SafeAreaView>
