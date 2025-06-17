@@ -28,7 +28,7 @@ export default function Home() {
           {/* Main Content */}
           <ScrollView
             className="flex-1"
-            contentContainerStyle={{ paddingHorizontal: 9, paddingVertical: 0 }}
+            contentContainerStyle={{ paddingHorizontal: 9, paddingVertical: 0, paddingBottom: 100 }}
             showsVerticalScrollIndicator={false}
           >
             <View className="flex flex-col gap-[33px] items-center">

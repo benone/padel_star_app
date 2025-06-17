@@ -24,6 +24,7 @@ npm run web       # Web browser
 /constants        # Colors and settings
 /hooks            # Custom React hooks
 /assets           # Images, fonts, icons
+/tmp              # Temporary files, including screenshots
 ```
 
 ## Key Files
@@ -39,6 +40,7 @@ npm run web       # Web browser
 4. **Use Tailwind for CSS** (needs to be set up)
 5. **Create reusable components** in `/components`
 6. **Use @ notation for all imports**
+7. **Save all screenshots into project tmp folder**
 
 ## Adding New Stuff
 - **New screen**: Add file in `/app` directory

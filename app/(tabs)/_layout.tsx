@@ -1,45 +1,74 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { HomeIcon, CommunityIcon, ProfileIcon } from '@/components/ui/TabBarIcons';
+import { useThemeColor } from '@/hooks/useThemeColor';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const tintColorActive = useThemeColor({}, 'text');
+  const tintColorInactive = useThemeColor({}, 'tabIconDefault');
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
+    <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarButton: HapticTab,
+          tabBarActiveTintColor: tintColorActive,
+          tabBarInactiveTintColor: tintColorInactive,
+          tabBarStyle: Platform.select({
+            ios: {
+              position: 'absolute',
+              borderTopWidth: 0,
+              elevation: 0,
+              shadowOpacity: 0,
+              backgroundColor: 'white',
+              height: 85,
+              paddingTop: 8,
+              paddingBottom: 25,
+            },
+            default: {
+              borderTopWidth: 0,
+              elevation: 0,
+              shadowOpacity: 0,
+              backgroundColor: 'white',
+              height: 85,
+              paddingTop: 8,
+              paddingBottom: 20,
+            },
+          }),
+          tabBarLabelStyle: {
+            fontSize: 12,
+            fontFamily: 'Inter',
+            fontWeight: '500',
+            marginTop: 10,
           },
-          default: {},
-        }),
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
-    </Tabs>
+        }}>
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: 'Home',
+            tabBarIcon: ({ color }) => <HomeIcon color={color} size={23} />,
+          }}
+        />
+        <Tabs.Screen
+          name="explore"
+          options={{
+            title: 'Community',
+            tabBarIcon: ({ color }) => <CommunityIcon color={color} size={25} />,
+          }}
+        />
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: 'Profile',
+            tabBarIcon: ({ color }) => <ProfileIcon color={color} size={18} />,
+          }}
+        />
+      </Tabs>
+    </SafeAreaView>
   );
 }
