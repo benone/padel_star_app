@@ -6,6 +6,7 @@ import Banner from '@/components/ui/Banner';
 import CardWithImage from '@/components/ui/HomePage/CardWithImage';
 import SmallCard from '@/components/ui/HomePage/SmallCard';
 import TopBar from '@/components/ui/TopBar';
+import GraduationCapIcon from '@/components/icons/GraduationCapIcon';
 
 export default function Home() {
   return (
@@ -68,14 +69,14 @@ export default function Home() {
                   {/* Trainer Sessions Card */}
                   <SmallCard
                     title="Занятия с тренером"
-                    icon={require('@/assets/figma/graduation-cap.svg')}
+                    icon={<GraduationCapIcon width={25} height={20} color="white" />}
                     onPress={() => console.log('Trainer sessions pressed')}
                   />
 
                   {/* Tournaments Card */}
                   <SmallCard
                     title="Турниры"
-                    icon={require('@/assets/figma/graduation-cap.svg')}
+                    icon={<GraduationCapIcon width={25} height={20} color="white" />}
                     onPress={() => console.log('Tournaments pressed')}
                   />
                 </View>

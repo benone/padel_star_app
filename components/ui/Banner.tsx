@@ -1,5 +1,7 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
+import ChartIcon from '@/components/icons/ChartIcon';
+import ArrowRightIcon from '@/components/icons/ArrowRightIcon';
 
 interface BannerProps {
   title?: string;
@@ -20,12 +22,8 @@ export default function Banner({
     >
       <View className="flex flex-col h-[166px] items-center justify-center p-0 w-[358px]">
         <View className="h-[133px] w-[324px]">
-          <View className="absolute bg-slate-800 left-0 rounded-lg w-10 h-10 top-1">
-            <Image 
-              source={require('@/assets/figma/chart-icon.svg')}
-              className="w-3.5 h-3.5 absolute left-2 top-2"
-              resizeMode="contain"
-            />
+          <View className="absolute bg-slate-800 left-0 rounded-lg w-10 h-10 top-1 flex items-center justify-center">
+            <ChartIcon width={14} height={14} color="#FACC15" />
           </View>
           
           <View className="absolute left-[57px] top-[0.5px] w-[245px] h-[132px]">
@@ -37,12 +35,8 @@ export default function Banner({
             </Text>
           </View>
           
-          <View className="absolute right-2.5 top-[3px] w-2.5 h-4">
-            <Image 
-              source={require('@/assets/figma/arrow-right.svg')}
-              className="w-2.5 h-4"
-              resizeMode="contain"
-            />
+          <View className="absolute right-2.5 top-[3px] w-2.5 h-4 flex items-center justify-center">
+            <ArrowRightIcon width={10} height={16} color="#9CA3AF" />
           </View>
         </View>
       </View>

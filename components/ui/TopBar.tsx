@@ -1,5 +1,7 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
+import NotificationBellIcon from '@/components/icons/NotificationBellIcon';
+import MenuHamburgerIcon from '@/components/icons/MenuHamburgerIcon';
 
 interface TopBarProps {
   welcomeText: string;
@@ -26,25 +28,17 @@ export default function TopBar({
         
         <View className="h-7 w-[51px] flex flex-row items-center justify-between">
           <TouchableOpacity 
-            className="w-[17.5px] h-5"
+            className="w-[17.5px] h-5 flex items-center justify-center"
             onPress={onNotificationPress}
           >
-            <Image 
-              source={require('@/assets/figma/notification-bell.svg')}
-              className="w-[17.5px] h-5"
-              resizeMode="contain"
-            />
+            <NotificationBellIcon width={18} height={20} color="white" />
           </TouchableOpacity>
           
           <TouchableOpacity 
-            className="w-[17.5px] h-5"
+            className="w-[17.5px] h-5 flex items-center justify-center"
             onPress={onMenuPress}
           >
-            <Image 
-              source={require('@/assets/figma/menu-hamburger.svg')}
-              className="w-[17.5px] h-5"
-              resizeMode="contain"
-            />
+            <MenuHamburgerIcon width={18} height={20} color="white" />
           </TouchableOpacity>
         </View>
       </View>

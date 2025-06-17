@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
+import SearchIcon from '@/components/icons/SearchIcon';
 
 interface CardWithImageProps {
   title: string;
@@ -27,12 +28,8 @@ export default function CardWithImage({
             className="h-32 w-[171px] absolute top-0 left-0"
             resizeMode="cover"
           />
-          <View className="absolute bg-slate-800 h-11 w-[46px] left-3 top-[72px] rounded-xl">
-            <Image 
-              source={require('@/assets/figma/search-icon.svg')}
-              className="w-[18px] h-[18px] absolute left-[13px] top-3"
-              resizeMode="contain"
-            />
+          <View className="absolute bg-slate-800 h-11 w-[46px] left-3 top-[72px] rounded-xl flex items-center justify-center">
+            <SearchIcon width={18} height={18} color="white" />
           </View>
         </View>
         

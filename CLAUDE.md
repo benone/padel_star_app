@@ -51,3 +51,8 @@ npm run web       # Web browser
 - New React Native architecture enabled
 - Strict TypeScript mode
 - No testing framework yet (add Jest if needed)
+
+## SVG Generation
+- Generate SVG using react-native-svg library
+- Install with: `npm install react-native-svg`
+- Import components like Svg, Path, etc. from 'react-native-svg'

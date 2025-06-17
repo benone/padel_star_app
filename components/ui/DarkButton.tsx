@@ -1,5 +1,6 @@
 import React from 'react';
-import { TouchableOpacity, Text, Image, View } from 'react-native';
+import { TouchableOpacity, Text } from 'react-native';
+import SendArrowIcon from '@/components/icons/SendArrowIcon';
 
 interface DarkButtonProps {
   title: string;
@@ -26,11 +27,7 @@ export default function DarkButton({
       </Text>
       
       {showIcon && (
-        <Image 
-          source={require('@/assets/figma/send-arrow.svg')}
-          className="w-[12.25px] h-3.5"
-          resizeMode="contain"
-        />
+        <SendArrowIcon width={13} height={14} color="white" />
       )}
     </TouchableOpacity>
   );
