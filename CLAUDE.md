@@ -15,6 +15,8 @@ npm start         # Start development
 npm run ios       # iOS simulator
 npm run android   # Android emulator
 npm run web       # Web browser
+npm run codegen    # Generate GraphQL types
+npm run codegen:watch # Auto-generate on changes
 ```
 
 ## File Structure
@@ -24,6 +26,10 @@ npm run web       # Web browser
 /constants        # Colors and settings
 /hooks            # Custom React hooks
 /assets           # Images, fonts, icons
+/src              # Source code
+  /apollo         # Apollo Client setup
+  /generated      # Auto-generated GraphQL types
+  /graphql        # GraphQL queries and mutations
 /tmp              # Temporary files, including screenshots
 ```
 
@@ -58,3 +64,11 @@ npm run web       # Web browser
 - Generate SVG using react-native-svg library
 - Install with: `npm install react-native-svg`
 - Import components like Svg, Path, etc. from 'react-native-svg'
+
+## GraphQL Setup
+- API endpoint: https://api.padelstarclub.ru/graphql
+- Run `npm run codegen` to generate types from the schema
+- Create queries in `/src/graphql/*.graphql` files
+- Use generated hooks from `@/src/generated/graphql`
+- Apollo Client is configured in `/src/apollo/client.ts`
+- Wrap your app with ApolloProvider from `/src/apollo/ApolloProvider.tsx`
