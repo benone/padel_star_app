@@ -5,6 +5,7 @@ import { Modal, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'r
 // Import all screens
 import Home from './Screens/Home';
 import Login from './Screens/Login';
+import Verify from './Screens/Verify';
 
 // Simple wrapper for Explore screen to avoid navigation context issues
 const ExploreWrapper = () => (
@@ -35,6 +36,7 @@ interface ScreenInfo {
 
 const screens: ScreenInfo[] = [
   { name: 'Login', component: Login },
+  { name: 'Verify', component: Verify },
   { name: 'Home', component: Home },
   { name: 'Explore', component: ExploreWrapper },
   { name: 'Profile', component: ProfileWrapper }

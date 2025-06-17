@@ -1,272 +1,175 @@
 import React, { useState } from 'react';
-import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { View, Text, TextInput, Pressable, SafeAreaView } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import { SvgXml } from 'react-native-svg';
 
-// Image constants from local assets
-const menuIconImg = require('@/assets/figma/menu-icon.svg');
-const phoneIconImg = require('@/assets/figma/phone-icon.svg');
-const russiaFlagImg = require('@/assets/figma/russia-flag.svg');
-const arrowRightImg = require('@/assets/figma/arrow-right.svg');
+// SVG assets as constants
+const menuHamburgerSvg = `<svg width="20" height="14" viewBox="0 0 20 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 1C0 0.447715 0.447715 0 1 0H19C19.5523 0 20 0.447715 20 1C20 1.55228 19.5523 2 19 2H1C0.447715 2 0 1.55228 0 1Z" fill="white"/>
+<path d="M0 7C0 6.44772 0.447715 6 1 6H19C19.5523 6 20 6.44772 20 7C20 7.55228 19.5523 8 19 8H1C0.447715 8 0 7.55228 0 7Z" fill="white"/>
+<path d="M0 13C0 12.4477 0.447715 12 1 12H19C19.5523 12 20 12.4477 20 13C20 13.5523 19.5523 14 19 14H1C0.447715 14 0 13.5523 0 13Z" fill="white"/>
+</svg>`;
+
+const phoneIconContainerSvg = `<svg width="79" height="80" viewBox="0 0 79 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="79" height="80" rx="16" fill="#334155"/>
+<path d="M31 37C31 35.8954 31.8954 35 33 35H45C46.1046 35 47 35.8954 47 37V53C47 54.1046 46.1046 55 45 55H33C31.8954 55 31 54.1046 31 53V37Z" stroke="white" stroke-width="2"/>
+<path d="M35 39H43" stroke="white" stroke-width="2" stroke-linecap="round"/>
+<path d="M35 51H43" stroke="white" stroke-width="2" stroke-linecap="round"/>
+</svg>`;
+
+const phoneIconInputSvg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M6 3C5.44772 3 5 3.44772 5 4V20C5 20.5523 5.44772 21 6 21H18C18.5523 21 19 20.5523 19 20V4C19 3.44772 18.5523 3 18 3H6Z" stroke="#6B7280" stroke-width="2"/>
+<path d="M8 5H16" stroke="#6B7280" stroke-width="2" stroke-linecap="round"/>
+<path d="M8 19H16" stroke="#6B7280" stroke-width="2" stroke-linecap="round"/>
+</svg>`;
+
+const sendArrowSvg = `<svg width="13" height="14" viewBox="0 0 13 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M5.50001 2.33332L10.6667 7.00001L5.50001 11.6667M10.3333 7.00001H2.33334" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
 
 export default function Login() {
   const [phoneNumber, setPhoneNumber] = useState('');
 
+  const handleSendCode = () => {
+    console.log('Send code pressed with phone:', phoneNumber);
+    // Handle send code logic here
+  };
+
+  const handleTermsPress = () => {
+    console.log('Terms of use pressed');
+  };
+
+  const handlePrivacyPress = () => {
+    console.log('Privacy policy pressed');
+  };
+
   return (
-    <View
-      className="bg-white relative rounded-lg flex-1"
+    <SafeAreaView
+      className="bg-white flex-1"
       data-name="Screens/Login"
     >
-      <View className="box-border content-stretch flex flex-col items-start justify-start overflow-clip p-0 relative flex-1">
+      <StatusBar style="light" />
+      
+      <View className="flex-1 flex flex-col">
         {/* Top Bar */}
         <View
-          className="bg-slate-800 h-[63px] relative shrink-0 w-full"
+          className="bg-slate-800 h-[63px] flex-row items-center justify-between px-3 py-[15px]"
           data-name="Top Bar"
         >
-          <View className="relative flex-1">
-            <View className="box-border content-stretch flex flex-row h-[63px] items-start justify-between px-3 py-[15px] relative w-full">
-              <View
-                className="bg-transparent relative w-[236px]"
-                data-name="div"
-              >
-                <View className="box-border content-stretch flex flex-row items-center justify-start p-0 relative w-[236px]">
-                  <Text className="font-bold h-[39px] leading-[32px] text-white text-[24px] text-left w-[236px]">
-                    Добро пожаловать
-                  </Text>
-                </View>
-              </View>
-              <View
-                className="bg-transparent h-7 relative w-[51px]"
-                data-name="div"
-              >
-                <View
-                  className="absolute h-5 left-[33.5px] top-[3.5px] w-[17.5px]"
-                  data-name="Frame"
-                >
-                  <View className="box-border content-stretch flex flex-row h-5 items-center justify-center overflow-hidden p-0 relative w-[17.5px]">
-                    <View
-                      className="h-5 relative w-[17.5px]"
-                      data-name="Frame"
-                    >
-                      <Image
-                        source={menuIconImg}
-                        className="w-full h-full"
-                        resizeMode="cover"
-                      />
-                    </View>
-                  </View>
-                </View>
-              </View>
-            </View>
+          <Text className="font-bold text-[24px] text-white leading-[32px] w-[236px]">
+            Добро пожаловать
+          </Text>
+          <View className="h-7 w-[51px] items-end justify-center">
+            <SvgXml xml={menuHamburgerSvg} width={17.5} height={20} />
           </View>
         </View>
 
         {/* Body */}
-        <View
-          className="basis-0 bg-transparent grow min-h-px min-w-px relative shrink-0 w-full"
-          data-name="Body"
-        >
-          <View className="box-border content-stretch flex flex-row items-center justify-center p-0 relative flex-1">
-            <View
-              className="basis-0 bg-gray-100 grow h-full min-h-px min-w-px relative shrink-0"
-              data-name="Container"
-            >
-              <View className="flex flex-col items-center justify-center overflow-clip relative flex-1">
-                <View className="box-border content-stretch flex flex-col gap-[35px] items-center justify-center px-4 py-[84px] relative flex-1">
-                  <View
-                    className="bg-transparent relative shrink-0 w-full"
-                    data-name="Container"
-                  >
-                    <View className="box-border content-stretch flex flex-col gap-6 items-center justify-start p-0 relative w-full">
-                      <View
-                        className="bg-slate-800 relative rounded-2xl shrink-0"
-                        data-name="Icon Container"
-                      >
-                        <View className="flex flex-row items-center relative flex-1">
-                          <View className="box-border content-stretch flex flex-row gap-2.5 items-center justify-start px-[29px] py-[25px] relative">
-                            <View
-                              className="bg-transparent h-[30px] relative w-[22.5px]"
-                              data-name="Icon"
-                            >
-                              <View
-                                className="absolute h-[30px] left-0 top-0 w-[22.5px]"
-                                data-name="Icon Frame"
-                              >
-                                <View className="box-border content-stretch flex flex-row h-[30px] items-center justify-center p-0 relative w-[22.5px]">
-                                  <View
-                                    className="h-[30px] relative w-[22.5px]"
-                                    data-name="Icon Frame"
-                                  >
-                                    <Image
-                                      source={phoneIconImg}
-                                      className="w-full h-full"
-                                      resizeMode="cover"
-                                    />
-                                  </View>
-                                </View>
-                              </View>
-                            </View>
-                          </View>
-                        </View>
-                      </View>
-                      <View
-                        className="bg-transparent relative shrink-0 w-full"
-                        data-name="Text Container"
-                      >
-                        <View className="flex flex-col items-center justify-center relative flex-1">
-                          <View className="box-border content-stretch flex flex-col gap-[22px] items-center justify-center px-[30px] py-[18px] relative text-center w-full">
-                            <Text className="font-bold relative shrink-0 text-[24px] text-slate-800 w-full leading-normal">
-                              Добро пожаловать!
-                            </Text>
-                            <Text className="font-normal h-6 relative shrink-0 text-[16px] text-gray-600 w-full leading-normal">
-                              Введите номер телефона для входа в приложение
-                            </Text>
-                          </View>
-                        </View>
-                      </View>
+        <View className="flex-1 bg-gray-100">
+          <View className="flex-1 items-center justify-center px-4 py-[84px]">
+            <View className="flex flex-col gap-[35px] items-center justify-center w-full">
+              
+              {/* Header Section */}
+              <View className="w-full">
+                <View className="flex flex-col gap-6 items-center justify-start">
+                  {/* Icon Container */}
+                  <View className="h-20 w-[78.625px]">
+                    <SvgXml xml={phoneIconContainerSvg} width={78.625} height={80} />
+                  </View>
+                  
+                  {/* Text Container */}
+                  <View className="w-full">
+                    <View className="flex flex-col gap-[22px] items-center justify-center px-[30px] py-[18px]">
+                      <Text className="font-bold text-[24px] text-slate-800 text-center w-full leading-normal">
+                        Добро пожаловать!
+                      </Text>
+                      <Text className="font-normal text-[16px] text-gray-600 text-center w-full leading-normal">
+                        Введите номер телефона для входа в приложение
+                      </Text>
                     </View>
                   </View>
-                  <View
-                    className="bg-white relative rounded-2xl shrink-0 w-full"
-                    data-name="Container"
-                  >
-                    <View className="absolute border border-gray-200 border-solid inset-0 pointer-events-none rounded-2xl shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)]" />
-                    <View className="flex flex-col items-center justify-center relative flex-1">
-                      <View className="box-border content-stretch flex flex-col gap-6 items-center justify-center px-[23px] py-[25px] relative w-full">
-                        <View
-                          className="h-[90px] relative shrink-0 w-full"
-                          data-name="Phone Number Input Container"
-                        >
-                          <View className="box-border content-stretch flex flex-col h-[90px] items-start justify-start p-0 relative w-full">
-                            <View
-                              className="basis-0 bg-transparent grow min-h-px min-w-px relative shrink-0 w-full"
-                              data-name="Label Container"
-                            >
-                              <Text className="absolute font-bold h-7 left-0 text-[18px] text-left text-slate-800 top-[1.18px] w-[231px] leading-normal">
-                                Введите номер телефона
-                              </Text>
-                            </View>
-                            <View
-                              className="bg-gray-50 relative rounded-xl shrink-0 w-full border border-gray-200"
-                              data-name="Input Field Container"
-                            >
-                              <View className="flex flex-row items-center relative flex-1">
-                                <View className="box-border content-stretch flex flex-row items-center justify-between px-[17px] py-[19px] relative w-full">
-                                  <View
-                                    className="bg-transparent relative shrink-0 size-6"
-                                    data-name="Icon Container"
-                                  >
-                                    <View
-                                      className="absolute left-[5px] w-3.5 h-3.5 top-[5px]"
-                                      data-name="Icon Frame"
-                                    >
-                                      <View className="box-border content-stretch flex flex-row items-center justify-center overflow-hidden p-0 relative w-3.5 h-3.5">
-                                        <View
-                                          className="relative w-3.5 h-3.5"
-                                          data-name="Icon Frame"
-                                        >
-                                          <Image
-                                            source={russiaFlagImg}
-                                            className="w-full h-full"
-                                            resizeMode="cover"
-                                          />
-                                        </View>
-                                      </View>
-                                    </View>
-                                  </View>
-                                  <View
-                                    className="bg-transparent h-6 relative w-[225px]"
-                                    data-name="Phone Number Input Field"
-                                  >
-                                    <TextInput
-                                      className="absolute flex flex-col font-normal h-6 justify-center left-0 text-[16px] text-left top-3 -translate-y-1/2 w-[152px] leading-[24px]"
-                                      placeholder="+7 (999) 123-45-67"
-                                      placeholderTextColor="#ADAEBC"
-                                      value={phoneNumber}
-                                      onChangeText={setPhoneNumber}
-                                      keyboardType="phone-pad"
-                                      style={{ color: phoneNumber ? '#374151' : '#ADAEBC' }}
-                                    />
-                                  </View>
-                                </View>
-                              </View>
-                            </View>
-                          </View>
-                        </View>
-                        <View
-                          className="bg-transparent relative shrink-0 w-full"
-                          data-name="Confirmation Message Container"
-                        >
-                          <View className="flex flex-row items-center justify-center relative flex-1">
-                            <View className="box-border content-center flex flex-wrap gap-2.5 items-center justify-center px-[3px] py-0 relative w-full">
-                              <Text className="basis-0 font-normal grow leading-normal min-h-px min-w-px relative shrink-0 text-[14px] text-center text-gray-500">
-                                Мы отправим сообщение с кодом подтверждения
-                              </Text>
-                            </View>
-                          </View>
-                        </View>
-                      </View>
-                    </View>
-                  </View>
-                  <TouchableOpacity
-                    className="bg-slate-800 h-[55px] relative rounded-xl w-[312px]"
-                    data-name="Submit Button"
-                    onPress={() => {
-                      console.log('Phone number:', phoneNumber);
-                    }}
-                  >
-                    <View className="box-border content-stretch flex flex-row gap-[13px] h-[55px] items-center justify-center p-0 relative w-[312px]">
-                      <View
-                        className="bg-transparent h-6 relative w-[120px]"
-                        data-name="div"
-                      >
-                        <Text className="absolute font-bold h-6 left-[60.5px] text-white text-[16px] text-center top-[0.56px] -translate-x-1/2 w-[121px] leading-normal">
-                          Отправить код
+                </View>
+              </View>
+
+              {/* Input Container */}
+              <View className="bg-white rounded-2xl w-full shadow-sm border border-gray-200">
+                <View className="flex flex-col gap-6 items-center justify-center px-[23px] py-[25px]">
+                  
+                  {/* Phone Number Input Container */}
+                  <View className="h-[90px] w-full">
+                    <View className="flex flex-col h-[90px] justify-start w-full">
+                      {/* Label Container */}
+                      <View className="flex-1 justify-start">
+                        <Text className="font-bold text-[18px] text-slate-800 leading-normal mt-[1.18px]">
+                          Введите номер телефона
                         </Text>
                       </View>
-                      <View
-                        className="bg-transparent h-3.5 relative w-[12.25px]"
-                        data-name="i"
-                      >
-                        <View
-                          className="absolute h-3.5 left-0 top-0 w-[12.25px]"
-                          data-name="svg"
-                        >
-                          <View className="box-border content-stretch flex flex-row h-3.5 items-center justify-center p-0 relative w-[12.25px]">
-                            <View
-                              className="h-3.5 relative w-[12.25px]"
-                              data-name="Frame"
-                            >
-                              <Image
-                                source={arrowRightImg}
-                                className="w-full h-full"
-                                resizeMode="cover"
-                              />
-                            </View>
-                          </View>
+                      
+                      {/* Input Field Container */}
+                      <View className="bg-gray-50 rounded-xl border border-gray-200 flex-row items-center px-[17px] py-[19px]">
+                        <View className="w-6 h-6 mr-3">
+                          <SvgXml xml={phoneIconInputSvg} width={24} height={24} />
                         </View>
-                      </View>
-                    </View>
-                  </TouchableOpacity>
-                  <View
-                    className="relative shrink-0 w-full"
-                    data-name="Terms Container"
-                  >
-                    <View className="flex flex-col items-center justify-center relative flex-1">
-                      <View className="box-border content-stretch flex flex-col items-center justify-center px-0 py-[19px] relative w-full">
-                        <Text className="font-normal leading-[1.52] text-center text-gray-500 w-full text-[13px]">
-                          Продолжая, вы соглашаетесь с{' '}
-                          <Text className="[text-decoration-line:underline] [text-decoration-skip-ink:none] [text-decoration-style:solid] [text-underline-position:from-font]">Условиями использования</Text>
-                          {' '}и политикой{' '}
-                          <Text className="[text-decoration-line:underline] [text-decoration-skip-ink:none] [text-decoration-style:solid] [text-underline-position:from-font]">конфиденциальности</Text>
-                        </Text>
+                        <TextInput
+                          className="flex-1 text-[16px] text-gray-900 leading-[24px]"
+                          placeholder="+7 (999) 123-45-67"
+                          placeholderTextColor="#ADAEBC"
+                          value={phoneNumber}
+                          onChangeText={setPhoneNumber}
+                          keyboardType="phone-pad"
+                        />
                       </View>
                     </View>
                   </View>
+
+                  {/* Confirmation Message Container */}
+                  <View className="w-full">
+                    <View className="flex-row items-center justify-center px-[3px]">
+                      <Text className="font-normal text-[14px] text-gray-500 text-center leading-normal flex-1">
+                        Мы отправим сообщение с кодом подтверждения
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+
+              {/* Submit Button */}
+              <Pressable
+                className="bg-slate-800 h-[55px] w-[312px] rounded-xl flex-row items-center justify-center gap-[13px] active:bg-slate-700"
+                onPress={handleSendCode}
+                data-name="Submit Button"
+              >
+                <Text className="font-bold text-[16px] text-white leading-normal">
+                  Отправить код
+                </Text>
+                <SvgXml xml={sendArrowSvg} width={12.25} height={14} />
+              </Pressable>
+
+              {/* Terms Container */}
+              <View className="w-full">
+                <View className="flex flex-col items-center justify-center py-[19px]">
+                  <Text className="font-normal text-[13px] text-gray-500 text-center leading-[1.52]">
+                    <Text>Продолжая, вы соглашаетесь с </Text>
+                    <Text 
+                      className="underline"
+                      onPress={handleTermsPress}
+                    >
+                      Условиями использования
+                    </Text>
+                    <Text> и политикой </Text>
+                    <Text 
+                      className="underline"
+                      onPress={handlePrivacyPress}
+                    >
+                      конфиденциальности
+                    </Text>
+                  </Text>
                 </View>
               </View>
             </View>
           </View>
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
