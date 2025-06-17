@@ -1,7 +1,10 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, TextInput, Pressable, SafeAreaView } from 'react-native';
+import { View, Text, TextInput, Pressable, SafeAreaView, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SvgXml } from 'react-native-svg';
+import { useVerifyTelegramCodeMutation, useSendTelegramVerificationCodeMutation } from '@/src/generated/graphql';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // SVG assets as constants
 const menuHamburgerSvg = `<svg width="20" height="14" viewBox="0 0 20 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -27,12 +30,33 @@ const smsIconSvg = `<svg width="11" height="14" viewBox="0 0 11 14" fill="none" 
 
 export default function Verify() {
   const [code, setCode] = useState(['', '', '', '']);
+  const [isLoading, setIsLoading] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [requestId, setRequestId] = useState('');
+  const router = useRouter();
+  
+  // Load params from AsyncStorage
+  React.useEffect(() => {
+    const loadParams = async () => {
+      const stored = await AsyncStorage.getItem('verificationParams');
+      if (stored) {
+        const params = JSON.parse(stored);
+        setPhoneNumber(params.phoneNumber);
+        setRequestId(params.requestId);
+      }
+    };
+    loadParams();
+  }, []);
+  
   const inputRefs = [
     useRef<TextInput>(null),
     useRef<TextInput>(null),
     useRef<TextInput>(null),
     useRef<TextInput>(null)
   ];
+
+  const [verifyCode] = useVerifyTelegramCodeMutation();
+  const [resendVerificationCode] = useSendTelegramVerificationCodeMutation();
 
   const handleCodeChange = (text: string, index: number) => {
     const newCode = [...code];
@@ -52,15 +76,47 @@ export default function Verify() {
     }
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     const verificationCode = code.join('');
-    console.log('Login pressed with code:', verificationCode);
-    // Handle login logic here
+    
+    if (verificationCode.length !== 4) {
+      Alert.alert('Ошибка', 'Введите полный 4-значный код');
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      const result = await verifyCode({
+        variables: {
+          phoneNumber,
+          code: verificationCode,
+          requestId
+        }
+      });
+      
+      if (result.data?.verifyTelegramCode?.success && result.data?.verifyTelegramCode?.token) {
+        await AsyncStorage.setItem('authToken', result.data.verifyTelegramCode.token);
+        router.replace('/(tabs)');
+      } else {
+        Alert.alert('Ошибка', result.data?.verifyTelegramCode?.error || 'Неверный код');
+      }
+    } catch (error) {
+      Alert.alert('Ошибка', 'Произошла ошибка при проверке кода');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleSendSMS = () => {
-    console.log('Send SMS pressed');
-    // Handle SMS sending logic here
+  const handleSendSMS = async () => {
+    try {
+      await resendVerificationCode({
+        variables: { phoneNumber }
+      });
+      Alert.alert('Успешно', 'Код отправлен повторно');
+    } catch (error) {
+      Alert.alert('Ошибка', 'Не удалось отправить код повторно');
+    }
   };
 
   const handleTelegramAccountPress = () => {
@@ -117,13 +173,8 @@ export default function Verify() {
                         Введите код
                       </Text>
                       <Text className="font-normal text-[16px] text-gray-600 text-center leading-normal w-[296px]">
-                        <Text>Мы отправили код подтверждение в ваш Телеграм </Text>
-                        <Text 
-                          className="underline font-bold text-[#0962df]"
-                          onPress={handleTelegramAccountPress}
-                        >
-                          с этого аккаунта
-                        </Text>
+                        <Text>Мы отправили код подтверждение в ваш Телеграм на номер </Text>
+                        <Text className="font-bold">{phoneNumber}</Text>
                       </Text>
                     </View>
                   </View>
@@ -174,14 +225,19 @@ export default function Verify() {
 
               {/* Submit Button */}
               <Pressable
-                className="bg-slate-800 h-[55px] w-[312px] rounded-xl flex-row items-center justify-center gap-[13px] active:bg-slate-700"
+                className={`h-[55px] w-[312px] rounded-xl flex-row items-center justify-center gap-[13px] ${
+                  isLoading 
+                    ? 'bg-slate-600' 
+                    : 'bg-slate-800 active:bg-slate-700'
+                }`}
                 onPress={handleLogin}
+                disabled={isLoading}
                 data-name="Submit Button"
               >
                 <Text className="font-bold text-[16px] text-white leading-normal">
-                  Войти
+                  {isLoading ? 'Проверка...' : 'Войти'}
                 </Text>
-                <SvgXml xml={sendArrowSvg} width={12.25} height={14} />
+                {!isLoading && <SvgXml xml={sendArrowSvg} width={12.25} height={14} />}
               </Pressable>
 
               {/* Alternative Option Container */}

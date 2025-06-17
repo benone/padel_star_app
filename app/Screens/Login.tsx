@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, SafeAreaView } from 'react-native';
+import { View, Text, TextInput, Pressable, SafeAreaView, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SvgXml } from 'react-native-svg';
+import { useSendTelegramVerificationCodeMutation } from '@/src/generated/graphql';
+import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // SVG assets as constants
 const menuHamburgerSvg = `<svg width="20" height="14" viewBox="0 0 20 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -29,10 +32,42 @@ const sendArrowSvg = `<svg width="13" height="14" viewBox="0 0 13 14" fill="none
 
 export default function Login() {
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  
+  const [sendVerificationCode] = useSendTelegramVerificationCodeMutation();
 
-  const handleSendCode = () => {
-    console.log('Send code pressed with phone:', phoneNumber);
-    // Handle send code logic here
+  const handleSendCode = async () => {
+    if (!phoneNumber.trim()) {
+      Alert.alert('Ошибка', 'Введите номер телефона');
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      const result = await sendVerificationCode({
+        variables: { phoneNumber }
+      });
+      
+      if (result.data?.sendTelegramVerificationCode?.success) {
+        const requestId = result.data.sendTelegramVerificationCode.requestId;
+        
+        // Store params and navigate
+        await AsyncStorage.setItem('verificationParams', JSON.stringify({
+          phoneNumber,
+          requestId
+        }));
+        
+        router.push('/Screens/Verify');
+      } else {
+        Alert.alert('Ошибка', result.data?.sendTelegramVerificationCode?.error || 'Не удалось отправить код');
+      }
+    } catch (error) {
+      Alert.alert('Ошибка', 'Произошла ошибка при отправке кода');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleTermsPress = () => {
@@ -135,14 +170,19 @@ export default function Login() {
 
               {/* Submit Button */}
               <Pressable
-                className="bg-slate-800 h-[55px] w-[312px] rounded-xl flex-row items-center justify-center gap-[13px] active:bg-slate-700"
+                className={`h-[55px] w-[312px] rounded-xl flex-row items-center justify-center gap-[13px] ${
+                  isLoading 
+                    ? 'bg-slate-600' 
+                    : 'bg-slate-800 active:bg-slate-700'
+                }`}
                 onPress={handleSendCode}
+                disabled={isLoading}
                 data-name="Submit Button"
               >
                 <Text className="font-bold text-[16px] text-white leading-normal">
-                  Отправить код
+                  {isLoading ? 'Отправка...' : 'Отправить код'}
                 </Text>
-                <SvgXml xml={sendArrowSvg} width={12.25} height={14} />
+                {!isLoading && <SvgXml xml={sendArrowSvg} width={12.25} height={14} />}
               </Pressable>
 
               {/* Terms Container */}
