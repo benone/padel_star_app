@@ -3,8 +3,10 @@ import { View, Text, TextInput, Pressable, SafeAreaView, Alert } from 'react-nat
 import { StatusBar } from 'expo-status-bar';
 import { SvgXml } from 'react-native-svg';
 import { useVerifyTelegramCodeMutation, useSendTelegramVerificationCodeMutation } from '@/src/generated/graphql';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from '@/src/auth/AuthContext';
+import { AnonymousGate } from '@/src/auth/AuthGate';
 
 // SVG assets as constants
 const menuHamburgerSvg = `<svg width="20" height="14" viewBox="0 0 20 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -28,12 +30,13 @@ const smsIconSvg = `<svg width="11" height="14" viewBox="0 0 11 14" fill="none" 
 <path d="M3.5 10.5H7.5" stroke="#374151" stroke-width="1.5" stroke-linecap="round"/>
 </svg>`;
 
-export default function Verify() {
+function VerifyForm() {
   const [code, setCode] = useState(['', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [requestId, setRequestId] = useState('');
   const router = useRouter();
+  const { login } = useAuth();
   
   // Load params from AsyncStorage
   React.useEffect(() => {
@@ -96,12 +99,13 @@ export default function Verify() {
       });
       
       if (result.data?.verifyTelegramCode?.success && result.data?.verifyTelegramCode?.token) {
-        await AsyncStorage.setItem('authToken', result.data.verifyTelegramCode.token);
-        router.replace('/(tabs)');
+        await login(result.data.verifyTelegramCode.token);
+        // The redirect will happen automatically via AuthGate
       } else {
         Alert.alert('Ошибка', result.data?.verifyTelegramCode?.error || 'Неверный код');
       }
     } catch (error) {
+      console.error('Verify error:', error);
       Alert.alert('Ошибка', 'Произошла ошибка при проверке кода');
     } finally {
       setIsLoading(false);
@@ -120,16 +124,15 @@ export default function Verify() {
   };
 
   const handleTelegramAccountPress = () => {
-    console.log('Telegram account link pressed');
     // Handle telegram account navigation
   };
 
   const handleTermsPress = () => {
-    console.log('Terms of use pressed');
+    // Handle terms of use
   };
 
   const handlePrivacyPress = () => {
-    console.log('Privacy policy pressed');
+    // Handle privacy policy
   };
 
   return (
@@ -285,5 +288,13 @@ export default function Verify() {
         </View>
       </View>
     </SafeAreaView>
+  );
+}
+
+export default function Verify() {
+  return (
+    <AnonymousGate>
+      <VerifyForm />
+    </AnonymousGate>
   );
 }

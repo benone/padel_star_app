@@ -6,14 +6,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { HapticTab } from '@/components/HapticTab';
 import { HomeIcon, CommunityIcon, ProfileIcon } from '@/components/ui/TabBarIcons';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { AuthGate } from '@/src/auth/AuthGate';
 
 export default function TabLayout() {
   const tintColorActive = useThemeColor({}, 'text');
   const tintColorInactive = useThemeColor({}, 'tabIconDefault');
 
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-      <Tabs
+    <AuthGate>
+      <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+        <Tabs
         screenOptions={{
           headerShown: false,
           tabBarButton: HapticTab,
@@ -68,7 +70,8 @@ export default function TabLayout() {
             tabBarIcon: ({ color }) => <ProfileIcon color={color} size={18} />,
           }}
         />
-      </Tabs>
-    </SafeAreaView>
+        </Tabs>
+      </SafeAreaView>
+    </AuthGate>
   );
 }

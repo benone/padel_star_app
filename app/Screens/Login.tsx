@@ -5,6 +5,7 @@ import { SvgXml } from 'react-native-svg';
 import { useSendTelegramVerificationCodeMutation } from '@/src/generated/graphql';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AnonymousGate } from '@/src/auth/AuthGate';
 
 // SVG assets as constants
 const menuHamburgerSvg = `<svg width="20" height="14" viewBox="0 0 20 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -30,7 +31,7 @@ const sendArrowSvg = `<svg width="13" height="14" viewBox="0 0 13 14" fill="none
 <path d="M5.50001 2.33332L10.6667 7.00001L5.50001 11.6667M10.3333 7.00001H2.33334" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`;
 
-export default function Login() {
+function LoginForm() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -211,5 +212,13 @@ export default function Login() {
         </View>
       </View>
     </SafeAreaView>
+  );
+}
+
+export default function Login() {
+  return (
+    <AnonymousGate>
+      <LoginForm />
+    </AnonymousGate>
   );
 }

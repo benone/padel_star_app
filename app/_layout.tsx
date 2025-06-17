@@ -7,6 +7,8 @@ import '../global.css';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { ApolloProvider } from '@/src/apollo/ApolloProvider';
+import { AuthProvider, useAuth } from '@/src/auth/AuthContext';
+import { Splash } from '@/components/Splash';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -21,15 +23,29 @@ export default function RootLayout() {
 
   return (
     <ApolloProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="Screens/Login" options={{ headerShown: false }} />
-          <Stack.Screen name="Screens/Verify" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-        <StatusBar style="auto" />
-      </ThemeProvider>
+      <AuthProvider>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <RootNavigator />
+          <StatusBar style="auto" />
+        </ThemeProvider>
+      </AuthProvider>
     </ApolloProvider>
+  );
+}
+
+function RootNavigator() {
+  const { status } = useAuth();
+
+  if (status === 'loading') {
+    return <Splash />;
+  }
+
+  return (
+    <Stack>
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="Screens/Login" options={{ headerShown: false }} />
+      <Stack.Screen name="Screens/Verify" options={{ headerShown: false }} />
+      <Stack.Screen name="+not-found" />
+    </Stack>
   );
 }
