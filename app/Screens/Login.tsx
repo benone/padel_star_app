@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, SafeAreaView, Alert } from 'react-native';
+import { View, Text, TextInput, Pressable, SafeAreaView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SvgXml } from 'react-native-svg';
 import { useSendTelegramVerificationCodeMutation } from '@/src/generated/graphql';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AnonymousGate } from '@/src/auth/AuthGate';
+import { showError } from '@/src/utils/crossPlatformAlert';
 
 // SVG assets as constants
 const menuHamburgerSvg = `<svg width="20" height="14" viewBox="0 0 20 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -40,7 +41,7 @@ function LoginForm() {
 
   const handleSendCode = async () => {
     if (!phoneNumber.trim()) {
-      Alert.alert('Ошибка', 'Введите номер телефона');
+      showError('Введите номер телефона');
       return;
     }
 
@@ -62,10 +63,10 @@ function LoginForm() {
         
         router.push('/Screens/Verify');
       } else {
-        Alert.alert('Ошибка', result.data?.sendTelegramVerificationCode?.error || 'Не удалось отправить код');
+        showError(result.data?.sendTelegramVerificationCode?.error || 'Не удалось отправить код');
       }
     } catch (error) {
-      Alert.alert('Ошибка', 'Произошла ошибка при отправке кода');
+      showError('Произошла ошибка при отправке кода');
     } finally {
       setIsLoading(false);
     }

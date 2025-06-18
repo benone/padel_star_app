@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, TextInput, Pressable, SafeAreaView, Alert } from 'react-native';
+import { View, Text, TextInput, Pressable, SafeAreaView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SvgXml } from 'react-native-svg';
 import { useVerifyTelegramCodeMutation, useSendTelegramVerificationCodeMutation } from '@/src/generated/graphql';
@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '@/src/auth/AuthContext';
 import { AnonymousGate } from '@/src/auth/AuthGate';
+import { showError, showAlert } from '@/src/utils/crossPlatformAlert';
 
 // SVG assets as constants
 const menuHamburgerSvg = `<svg width="20" height="14" viewBox="0 0 20 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -83,7 +84,7 @@ function VerifyForm() {
     const verificationCode = code.join('');
     
     if (verificationCode.length !== 4) {
-      Alert.alert('Ошибка', 'Введите полный 4-значный код');
+      showError('Введите полный 4-значный код');
       return;
     }
 
@@ -102,11 +103,11 @@ function VerifyForm() {
         await login(result.data.verifyTelegramCode.token);
         // The redirect will happen automatically via AuthGate
       } else {
-        Alert.alert('Ошибка', result.data?.verifyTelegramCode?.error || 'Неверный код');
+        showError(result.data?.verifyTelegramCode?.error || 'Неверный код');
       }
     } catch (error) {
       console.error('Verify error:', error);
-      Alert.alert('Ошибка', 'Произошла ошибка при проверке кода');
+      showError('Произошла ошибка при проверке кода');
     } finally {
       setIsLoading(false);
     }
@@ -117,9 +118,9 @@ function VerifyForm() {
       await resendVerificationCode({
         variables: { phoneNumber }
       });
-      Alert.alert('Успешно', 'Код отправлен повторно');
+      showAlert('Успешно', 'Код отправлен повторно');
     } catch (error) {
-      Alert.alert('Ошибка', 'Не удалось отправить код повторно');
+      showError('Не удалось отправить код повторно');
     }
   };
 

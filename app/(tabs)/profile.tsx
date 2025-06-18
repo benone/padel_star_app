@@ -1,31 +1,25 @@
-import { View, Text, Pressable, Alert, ScrollView } from 'react-native';
+import { View, Text, Pressable, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/src/auth/AuthContext';
+import { showConfirm, showError } from '@/src/utils/crossPlatformAlert';
 
 export default function ProfileScreen() {
   const { logout } = useAuth();
 
   const handleLogout = () => {
-    Alert.alert(
+    showConfirm(
       'Выход',
       'Вы уверены, что хотите выйти?',
-      [
-        {
-          text: 'Отмена',
-          style: 'cancel'
-        },
-        {
-          text: 'Выйти',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await logout();
-            } catch (error) {
-              Alert.alert('Ошибка', 'Не удалось выйти из аккаунта');
-            }
-          }
+      async () => {
+        try {
+          await logout();
+        } catch (error) {
+          showError('Не удалось выйти из аккаунта', 'Ошибка');
         }
-      ]
+      },
+      undefined,
+      'Выйти',
+      'Отмена'
     );
   };
 
