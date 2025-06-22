@@ -8,6 +8,7 @@ import Login from './Screens/Login';
 import Verify from './Screens/Verify';
 import ClubsList from './Screens/ClubsList';
 import Menu from './Screens/Menu';
+import ClubSchedule from './Screens/ClubSchedule';
 
 // Simple wrapper for Explore screen to avoid navigation context issues
 const ExploreWrapper = () => (
@@ -41,6 +42,7 @@ const screens: ScreenInfo[] = [
   { name: 'Verify', component: Verify },
   { name: 'Home', component: Home },
   { name: 'ClubsList', component: ClubsList },
+  { name: 'ClubSchedule', component: ClubSchedule },
   { name: 'Menu', component: Menu },
   { name: 'Explore', component: ExploreWrapper },
   { name: 'Profile', component: ProfileWrapper }
