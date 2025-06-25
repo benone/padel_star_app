@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import { View, Text, SafeAreaView, ScrollView, TextInput, Pressable, Image } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import { SvgXml } from 'react-native-svg';
 import { useGetClubsQuery } from '@/src/generated/graphql';
 import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import React, { useState } from 'react';
+import { Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { SvgXml } from 'react-native-svg';
+
 
 // SVG assets as constants
 const frameBackSvg = `<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 11 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -74,17 +76,31 @@ interface ClubCardProps {
   onToggleLike: () => void;
 }
 
-function ClubCard({ club, index, isLiked, onToggleLike }: ClubCardProps) {
+function ClubCard({ club, index, isLiked, onToggleLike, ...props }: ClubCardProps) {
+  const router = useRouter();
   const clubImage = clubImages[index % clubImages.length];
   const timeSlots = index === 0 ? ['12:00'] : index === 1 ? ['14:30', '16:00'] : index === 2 ? ['13:00', '15:30', '17:00'] : ['11:00', '18:30'];
-  const prices = ['€13', '€18', '€25', '€22'];
-  const distances = ['2km - Valencia Valencia', '5km - Madrid Centro', '1.2km - Barcelona Eixample', '8km - Sevilla Norte'];
-  const timeFroms = ['1h from', '45min from', '20min from', '35min from'];
+  const prices = ['1200₽', '1500₽', '1800₽', '2000₽'];
+  const distances = ['2км - Черная речка', '5км - Академическая', '1.2км - Дыбенко', '8км - Купчино'];
+  const timeFroms = ['1ч от', '45мин от', '20мин от', '35мин от'];
 
   return (
-    <View 
+    <Pressable 
       className="bg-white rounded-2xl mb-4 mx-4 shadow-sm border border-gray-200 overflow-hidden"
       data-name="div"
+      onPress={() => router.push({
+        pathname: '/Screens/ClubSchedule',
+        params: {
+          clubId: club.id,
+          clubName: club.name,
+          clubCity: club.city || '',
+          clubDistrict: club.district || '',
+          clubDescription: club.description || '',
+          clubRating: club.rating?.toString() || '',
+          clubReviewCount: club.reviewCount.toString(),
+          clubImagesUrls: JSON.stringify(club.imagesUrls)
+        }
+      })}
     >
       {/* Image Container */}
       <View className="relative h-48 w-full">
@@ -134,7 +150,7 @@ function ClubCard({ club, index, isLiked, onToggleLike }: ClubCardProps) {
           ))}
         </View>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -159,94 +175,96 @@ export default function ClubsList() {
   };
 
   return (
-    <SafeAreaView 
-      className="bg-gray-50 flex-1"
-      data-name="Screen/ClubsList"
-    >
-      <StatusBar style="dark" />
-      
-      {/* Header */}
-      <View className="bg-white h-16 flex-row items-center justify-between px-4">
-        <Pressable 
-          className="w-8 h-8 items-center justify-center"
-          onPress={() => router.back()}
-        >
-          <SvgXml xml={frameBackSvg} width={11} height={18} />
-        </Pressable>
-        
-        <Text className="text-xl font-semibold text-gray-900">Search</Text>
-        
-        <Pressable>
-          <Text className="text-base font-medium text-blue-500">View map</Text>
-        </Pressable>
-      </View>
-      
-      {/* Search Bar */}
-      <View className="bg-white h-16 px-4 justify-center">
-        <View className="bg-gray-100 h-12 rounded-2xl flex-row items-center px-4">
-          <SvgXml xml={searchIconSvg} width={16} height={16} />
-          <TextInput
-            className="flex-1 ml-3 text-base text-gray-900"
-            placeholder="Clubs in the area"
-            placeholderTextColor="#ADAEBC"
-            value={searchText}
-            onChangeText={setSearchText}
-          />
-          <SvgXml xml={locationPinSvg} width={14} height={16} />
-          <View className="ml-3">
-            <SvgXml xml={filterIconSvg} width={16} height={16} />
-          </View>
-        </View>
-      </View>
-      
-      {/* Filters */}
-      <View className="bg-white h-[69px] border-b border-gray-100 px-4 justify-center">
-        <View className="flex-row items-center">
-          <SvgXml xml={filterIconSvg} width={16} height={16} />
-          <View className="ml-3 flex-row gap-3">
-            <View className="bg-gray-800 px-4 py-2 rounded-full flex-row items-center">
-              <Text className="text-sm font-medium text-white mr-2">Padel</Text>
-              <SvgXml xml={closeXSvg} width={12} height={12} />
-            </View>
-            <View className="bg-gray-800 px-4 py-2 rounded-full flex-row items-center">
-              <Text className="text-sm font-medium text-white mr-2">Jun 15 | 12 - 17</Text>
-              <SvgXml xml={closeXSvg} width={12} height={12} />
-            </View>
-          </View>
-        </View>
-      </View>
-      
-      {/* Clubs List */}
-      <ScrollView 
-        className="flex-1"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingVertical: 16 }}
+    <SafeAreaView className="flex-1 bg-white">
+      <View
+        className="flex-1 bg-white rounded-lg shadow-lg"
+        data-name="Screens/ClubsList"
       >
-        {loading ? (
-          <View className="flex-1 items-center justify-center">
-            <Text className="text-gray-500">Loading clubs...</Text>
+        <StatusBar style="light" />
+
+        <View className="flex-1 bg-gray-50">
+          <View className="flex flex-col flex-1">
+            {/* Header */}
+            <View className="bg-white h-16 flex-row items-center justify-between px-4">
+              <Pressable 
+                className="w-8 h-8 items-center justify-center"
+                onPress={() => router.back()}
+              >
+                <SvgXml xml={frameBackSvg} width={11} height={18} />
+              </Pressable>
+              
+              <Text className="text-xl font-semibold text-gray-900">Поиск</Text>
+              
+              <Pressable>
+                <Text className="text-base font-medium text-blue-500">На карте</Text>
+              </Pressable>
+            </View>
+            
+            {/* Search Bar */}
+            <View className="bg-white h-16 px-4 justify-center">
+              <View className="bg-gray-100 h-12 rounded-2xl flex-row items-center px-4">
+                <SvgXml xml={searchIconSvg} width={16} height={16} />
+                <TextInput
+                  className="flex-1 ml-3 text-base text-gray-900"
+                  placeholder="Клубы в этом районе"
+                  placeholderTextColor="#ADAEBC"
+                  value={searchText}
+                  onChangeText={setSearchText}
+                />
+                <SvgXml xml={locationPinSvg} width={14} height={16} />
+                <View className="ml-3">
+                  <SvgXml xml={filterIconSvg} width={16} height={16} />
+                </View>
+              </View>
+            </View>
+            
+            {/* Filters */}
+            <View className="bg-white h-[69px] border-b border-gray-100 px-4 justify-center">
+              <View className="flex-row items-center">
+                <SvgXml xml={filterIconSvg} width={16} height={16} />
+                <View className="ml-3 flex-row gap-3">
+                  <View className="bg-gray-800 px-4 py-2 rounded-full flex-row items-center">
+                    <Text className="text-sm font-medium text-white mr-2">Падл</Text>
+                    <SvgXml xml={closeXSvg} width={12} height={12} />
+                  </View>
+                  <View className="bg-gray-800 px-4 py-2 rounded-full flex-row items-center">
+                    <Text className="text-sm font-medium text-white mr-2">15 июня | 12 - 17</Text>
+                    <SvgXml xml={closeXSvg} width={12} height={12} />
+                  </View>
+                </View>
+              </View>
+            </View>
+            
+            {/* Clubs List */}
+            <ScrollView 
+              className="flex-1"
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingVertical: 16 }}
+            >
+              {loading ? (
+                <View className="flex-1 items-center justify-center py-20">
+                  <Text className="text-gray-500">Загрузка клубов...</Text>
+                </View>
+              ) : error ? (
+                <View className="flex-1 items-center justify-center py-20">
+                  <Text className="text-red-500">Ошибка загрузки клубов</Text>
+                </View>
+              ) : (
+                clubs.map((club, index) => (
+                  <ClubCard
+                    key={club.id}
+                    club={club}
+                    index={index}
+                    isLiked={likedClubs.has(club.id)}
+                    onToggleLike={() => toggleLike(club.id)}
+                  />
+                ))
+              )}
+              
+            </ScrollView>
           </View>
-        ) : error ? (
-          <View className="flex-1 items-center justify-center">
-            <Text className="text-red-500">Error loading clubs</Text>
-          </View>
-        ) : (
-          clubs.map((club, index) => (
-            <ClubCard
-              key={club.id}
-              club={club}
-              index={index}
-              isLiked={likedClubs.has(club.id)}
-              onToggleLike={() => toggleLike(club.id)}
-            />
-          ))
-        )}
-        
-        {/* Bottom Indicator */}
-        <View className="items-center mt-4 mb-2">
-          <View className="w-32 h-1 bg-black rounded-full" />
         </View>
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }

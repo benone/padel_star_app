@@ -5,10 +5,10 @@ import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import '../global.css';
 
+import { Splash } from '@/components/Splash';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { ApolloProvider } from '@/src/apollo/ApolloProvider';
 import { AuthProvider, useAuth } from '@/src/auth/AuthContext';
-import { Splash } from '@/components/Splash';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -45,6 +45,8 @@ function RootNavigator() {
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="Screens/Login" options={{ headerShown: false }} />
       <Stack.Screen name="Screens/Verify" options={{ headerShown: false }} />
+      <Stack.Screen name="Screens/ClubsList" options={{ headerShown: false }} />
+      <Stack.Screen name="Screens/ClubSchedule" options={{ headerShown: false }} />
       <Stack.Screen name="+not-found" />
     </Stack>
   );

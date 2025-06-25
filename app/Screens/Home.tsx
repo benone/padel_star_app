@@ -8,8 +8,31 @@ import Banner from '@/components/ui/Banner';
 import CardWithImage from '@/components/ui/HomePage/CardWithImage';
 import SmallCard from '@/components/ui/HomePage/SmallCard';
 import TopBar from '@/components/ui/TopBar';
+import { useGetClubsLazyQuery } from '@/src/generated/graphql';
+import { showError } from '@/src/utils/crossPlatformAlert';
 
 export default function Home() {
+  const [getClubs, { loading: clubsLoading }] = useGetClubsLazyQuery();
+
+  const handleCourtBookingPress = async () => {
+    if (clubsLoading) return; // Предотвращаем повторные нажатия
+    
+    try {
+      // Отправляем GraphQL запрос для получения клубов
+      const result = await getClubs();
+      
+      if (result.data?.clubs) {
+        // Если запрос успешен, переходим к экрану клубов
+        router.push('/Screens/ClubsList');
+      } else {
+        showError('Не удалось загрузить клубы');
+      }
+    } catch (error) {
+      console.error('Error fetching clubs:', error);
+      showError('Произошла ошибка при загрузке клубов');
+    }
+  };
+
   return (
     <View
       className="flex-1 bg-white rounded-lg shadow-lg"
@@ -54,9 +77,9 @@ export default function Home() {
                   {/* Court Booking Card */}
                   <CardWithImage
                     title="Бронь корта"
-                    description="Если ты уже знаешь, с кем хочешь играть"
+                    description={clubsLoading ? "Загрузка..." : "Если ты уже знаешь, с кем хочешь играть"}
                     imageSource={require('@/assets/figma/padel-court-image.png')}
-                    onPress={() => console.log('Court booking pressed')}
+                    onPress={handleCourtBookingPress}
                   />
 
                   {/* Open Match Card */}
