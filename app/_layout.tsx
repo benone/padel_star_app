@@ -47,6 +47,8 @@ function RootNavigator() {
       <Stack.Screen name="Screens/Verify" options={{ headerShown: false }} />
       <Stack.Screen name="Screens/ClubsList" options={{ headerShown: false }} />
       <Stack.Screen name="Screens/ClubSchedule" options={{ headerShown: false }} />
+      <Stack.Screen name="Screens/OpenMatchList" options={{ headerShown: false }} />
+      <Stack.Screen name="Screens/OpenMatch" options={{ headerShown: false }} />
       <Stack.Screen name="+not-found" />
     </Stack>
   );

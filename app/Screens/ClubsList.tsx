@@ -70,6 +70,11 @@ interface ClubCardProps {
     imagesUrls: string[];
     rating?: number | null;
     reviewCount: number;
+    amenities?: any | null;
+    phone?: string | null;
+    email?: string | null;
+    website?: string | null;
+    workingHours?: any | null;
   };
   index: number;
   isLiked: boolean;
@@ -82,25 +87,34 @@ function ClubCard({ club, index, isLiked, onToggleLike, ...props }: ClubCardProp
   const timeSlots = index === 0 ? ['12:00'] : index === 1 ? ['14:30', '16:00'] : index === 2 ? ['13:00', '15:30', '17:00'] : ['11:00', '18:30'];
   const prices = ['1200₽', '1500₽', '1800₽', '2000₽'];
   const distances = ['2км - Черная речка', '5км - Академическая', '1.2км - Дыбенко', '8км - Купчино'];
-  const timeFroms = ['1ч от', '45мин от', '20мин от', '35мин от'];
-
+  const timeFroms = ['1ч от', '45мин от', '20мин от', '35мин от'];  
   return (
     <Pressable 
       className="bg-white rounded-2xl mb-4 mx-4 shadow-sm border border-gray-200 overflow-hidden"
       data-name="div"
-      onPress={() => router.push({
-        pathname: '/Screens/ClubSchedule',
-        params: {
-          clubId: club.id,
-          clubName: club.name,
-          clubCity: club.city || '',
-          clubDistrict: club.district || '',
-          clubDescription: club.description || '',
-          clubRating: club.rating?.toString() || '',
-          clubReviewCount: club.reviewCount.toString(),
-          clubImagesUrls: JSON.stringify(club.imagesUrls)
-        }
-      })}
+      onPress={() => {
+        console.log('=== CLUBS LIST DEBUG ===');
+        console.log('club.workingHours:', club.workingHours);
+        
+        router.push({
+          pathname: '/Screens/ClubSchedule',
+          params: {
+            clubId: club.id,
+            clubName: club.name,
+            clubCity: club.city || '',
+            clubDistrict: club.district || '',
+            clubDescription: club.description || '',
+            clubRating: club.rating?.toString() || '',
+            clubReviewCount: club.reviewCount.toString(),
+            clubImagesUrls: JSON.stringify(club.imagesUrls),
+            amenities: JSON.stringify(club.amenities),
+            phone: club.phone || '',
+            email: club.email || '',
+            website: club.website || '',
+            workingHours: JSON.stringify(club.workingHours)
+          }
+        })
+      }}
     >
       {/* Image Container */}
       <View className="relative h-48 w-full">
@@ -144,11 +158,14 @@ function ClubCard({ club, index, isLiked, onToggleLike, ...props }: ClubCardProp
         {/* Time Slots */}
         <View className="flex-row gap-2">
           {timeSlots.map((time, timeIndex) => (
-            <View key={timeIndex} className="bg-gray-100 px-3 py-2 rounded-lg">
+            <View key={`${club.id}-${timeIndex}`} className="bg-gray-100 px-3 py-2 rounded-lg">
               <Text className="text-base font-medium text-gray-700">{time}</Text>
             </View>
           ))}
         </View>
+
+        {/* Amenities */}
+        {/* Amenities are handled outside the ClubCard component */}
       </View>
     </Pressable>
   );
@@ -159,9 +176,8 @@ export default function ClubsList() {
   const [searchText, setSearchText] = useState('');
   const [likedClubs, setLikedClubs] = useState<Set<string>>(new Set());
   const { data: clubsData, loading, error } = useGetClubsQuery();
-
   const clubs = clubsData?.clubs || [];
-
+  
   const toggleLike = (clubId: string) => {
     setLikedClubs(prev => {
       const newSet = new Set(prev);
@@ -252,7 +268,7 @@ export default function ClubsList() {
               ) : (
                 clubs.map((club, index) => (
                   <ClubCard
-                    key={club.id}
+                    key={club.id || `club-${index}`}
                     club={club}
                     index={index}
                     isLiked={likedClubs.has(club.id)}

@@ -87,7 +87,10 @@ export default function Home() {
                     title="Открытый матч"
                     description="Найти соперников"
                     imageSource={require('@/assets/figma/players-playing-padel.png')}
-                    onPress={() => console.log('Open match pressed')}
+                    onPress={() => {
+                      console.log('Open match pressed');
+                      router.push('/Screens/OpenMatchesList');
+                    }}
                   />
 
                   {/* Trainer Sessions Card */}

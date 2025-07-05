@@ -1208,7 +1208,7 @@ export type LoginPlayerMutation = { __typename?: 'Mutation', loginPlayer?: { __t
 export type GetClubsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetClubsQuery = { __typename?: 'Query', clubs: Array<{ __typename?: 'Club', id: string, name: string, city?: string | null, district?: string | null, description?: string | null, imagesUrls: Array<string>, amenities?: any | null, rating?: number | null, reviewCount: number, workingHours?: any | null, courts: Array<{ __typename?: 'Court', id: string, name: string, surface?: string | null, indoor: boolean }> }> };
+export type GetClubsQuery = { __typename?: 'Query', clubs: Array<{ __typename?: 'Club', id: string, name: string, city?: string | null, district?: string | null, description?: string | null, imagesUrls: Array<string>, amenities?: any | null, rating?: number | null, reviewCount: number, phone?: string | null, email?: string | null, website?: string | null, workingHours?: any | null, courts: Array<{ __typename?: 'Court', id: string, name: string, surface?: string | null, indoor: boolean }> }> };
 
 export type GetClubQueryVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -1388,6 +1388,9 @@ export const GetClubsDocument = gql`
     amenities
     rating
     reviewCount
+    phone
+    email
+    website
     courts {
       id
       name
