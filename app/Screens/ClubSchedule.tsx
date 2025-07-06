@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Image, Pressable, ScrollView, Switch, Text, View } from 'react-native';
+import { Image, Modal, Pressable, ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SvgXml } from 'react-native-svg';
 
@@ -25,8 +25,10 @@ export default function ClubScheduleScreen()  {
   const [selectedTimes, setSelectedTimes] = useState<Set<string>>(new Set());
   const date = new Date();
   const today = date.getDate().toString();
-  const [selectedDate, setSelectedDate] = useState<string>(today); 
-  const [activeTab, setActiveTab] = useState<string>('Бронирование'); // Добавляем состояние для активного таба
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [activeTab, setActiveTab] = useState<string>('Бронирование');
+  const [selectedSport, setSelectedSport] = useState<'padel' | 'tennis' | 'squash'>('padel');
+  const [sportModalVisible, setSportModalVisible] = useState(false);
   
   const clubData = {
     id: params.clubId as string,
@@ -44,6 +46,12 @@ export default function ClubScheduleScreen()  {
     workingHours: params.workingHours ? JSON.parse(params.workingHours as string) : null
   };
   
+  const sports = [
+    { key: 'padel', label: 'Падел', icon: '🎾' },
+    { key: 'tennis', label: 'Теннис', icon: '🏸' },
+    { key: 'squash', label: 'Сквош', icon: '🥎' },
+  ];
+
   // Функция для генерации дат на 2 месяца вперед
   const generateDates = () => {
     const dates = [];
@@ -57,10 +65,14 @@ export default function ClubScheduleScreen()  {
       const dayDate = date.getDate().toString();
       const month = date.toLocaleDateString('ru-RU', { month: 'long' });
       
+      // Используем полную дату как уникальный идентификатор
+      const dateId = date.toISOString().split('T')[0]; // формат YYYY-MM-DD
+      
       dates.push({
         dayName,
         date: dayDate,
-        month
+        month,
+        dateId // добавляем уникальный идентификатор
       });
     }
     
@@ -72,19 +84,21 @@ export default function ClubScheduleScreen()  {
   const DateSelector = ({ 
     dayName, 
     date, 
-    month 
+    month,
+    dateId 
   }: { 
     dayName: string, 
     date: string, 
-    month: string 
+    month: string,
+    dateId: string
   }) => {
-    const isSelected = selectedDate === date;
+    const isSelected = selectedDate === dateId; // используем dateId вместо date
     
     return (
       <Pressable 
         className="h-24 w-[60px]" 
         data-name="DateSelector"
-        onPress={() => setSelectedDate(date)}
+        onPress={() => setSelectedDate(dateId)} // используем dateId
       >
         <View className="h-5 w-[30px] mx-auto">
           <Text className="text-sm text-gray-600 text-center leading-5">{dayName}</Text>
@@ -308,6 +322,97 @@ export default function ClubScheduleScreen()  {
     );
   };
 
+  // Селектор спорта с иконкой ракетки
+  const SportDropdown = () => {
+    // Получаем текущий выбранный спорт
+    const currentSport = sports.find(sport => sport.key === selectedSport);
+    
+    return (
+      <View>
+        <TouchableOpacity
+          onPress={() => setSportModalVisible(true)}
+          className="w-12 h-12 rounded-full bg-gray-100 items-center justify-center mr-2"
+          style={{ marginRight: 8 }}
+        >
+          <Text style={{ fontSize: 24 }}>{currentSport?.icon || '🎾'}</Text>
+        </TouchableOpacity>
+        <Modal
+          visible={sportModalVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setSportModalVisible(false)}
+        >
+          <TouchableOpacity
+            style={{
+              flex: 1,
+              backgroundColor: 'rgba(0,0,0,0.4)',
+              justifyContent: 'flex-end',
+            }}
+            activeOpacity={1}
+            onPress={() => setSportModalVisible(false)}
+          >
+            <View
+              style={{
+                backgroundColor: 'white',
+                borderTopLeftRadius: 20,
+                borderTopRightRadius: 20,
+                paddingTop: 20,
+                paddingBottom: 40,
+                paddingHorizontal: 20,
+                minHeight: 200,
+              }}
+            >
+              {/* Заголовок */}
+              <View className="flex-row justify-between items-center mb-6">
+                <Text className="text-xl font-semibold text-slate-800">
+                  Выберите вид спорта
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setSportModalVisible(false)}
+                  className="w-8 h-8 items-center justify-center"
+                >
+                  <Text className="text-2xl text-gray-500">×</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Список видов спорта */}
+              <View className="space-y-3">
+                {sports.map((sport) => (
+                  <TouchableOpacity
+                    key={sport.key}
+                    className={`flex-row items-center p-4 rounded-xl mb-4 ${
+                      selectedSport === sport.key 
+                        ? 'bg-slate-800' 
+                        : 'bg-gray-100'
+                    }`}
+                    onPress={() => {
+                      setSelectedSport(sport.key as 'padel' | 'tennis' | 'squash');
+                      setSportModalVisible(false);
+                    }}
+                  >
+                    <Text className="text-2xl mr-4">{sport.icon}</Text>
+                    <Text className={`text-lg font-medium ${
+                      selectedSport === sport.key 
+                        ? 'text-white' 
+                        : 'text-gray-700'
+                    }`}>
+                      {sport.label}
+                    </Text>
+                    {selectedSport === sport.key && (
+                      <View className="ml-auto">
+                        <Text className="text-white text-lg">✓</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </TouchableOpacity>
+        </Modal>
+      </View>
+    );
+  };
+
   // Функция для рендеринга контента в зависимости от активного таба
   const renderTabContent = () => {
     switch (activeTab) {
@@ -323,8 +428,9 @@ export default function ClubScheduleScreen()  {
       case 'Бронирование':
         return (
           <View>
-            {/* Date Selector */}
-            <View className="px-6 mb-4">
+            {/* Селектор спорта и скролл с датами */}
+            <View className="px-6 mb-4 flex-row items-center">
+              <SportDropdown />
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 <View className="flex-row gap-2">
                   {dates.map((dateInfo, index) => (
@@ -332,7 +438,8 @@ export default function ClubScheduleScreen()  {
                       key={index}
                       dayName={dateInfo.dayName} 
                       date={dateInfo.date} 
-                      month={dateInfo.month} 
+                      month={dateInfo.month}
+                      dateId={dateInfo.dateId}
                     />
                   ))}
                 </View>
@@ -340,7 +447,7 @@ export default function ClubScheduleScreen()  {
             </View>
 
             {/* Time Slots Grid */}
-            <View className="px-6">
+            <View className="px-6 mb-4">
               <View className="flex-row flex-wrap gap-2.5 py-[5px]">
                 <TimeSlot time="12:00" />
                 <TimeSlot time="13:00" />
@@ -377,7 +484,6 @@ export default function ClubScheduleScreen()  {
                   <Pressable 
                     className="bg-slate-800 py-4 rounded-xl items-center"
                     onPress={() => {
-                      console.log('Выбранные времена:', Array.from(selectedTimes));
                       console.log('Выбранная дата:', selectedDate);
                       router.push({
                         pathname: "/Screens/OpenMatchesList",
@@ -444,12 +550,39 @@ export default function ClubScheduleScreen()  {
       case 'Открытые матчи':
         return (
           <View className="px-6">
-            <Text className="text-lg font-medium text-slate-800 mb-4">
-              Открытые матчи
-            </Text>
-            <Text className="text-base text-gray-600 leading-6">
-              Здесь будут отображаться открытые матчи, к которым можно присоединиться.
-            </Text>
+            {/* Селектор спорта и скролл с датами */}
+            <View className="mb-4 flex-row items-center">
+              <SportDropdown />
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View className="flex-row gap-2">
+                  {dates.map((dateInfo, index) => (
+                    <DateSelector 
+                      key={index}
+                      dayName={dateInfo.dayName} 
+                      date={dateInfo.date} 
+                      month={dateInfo.month}
+                      dateId={dateInfo.dateId}
+                    />
+                  ))}
+                </View>
+              </ScrollView>
+            </View>
+
+            {/* Time Slots Grid */}
+            <View className="">
+              <View className="flex-row flex-wrap gap-2.5 py-[5px]">
+                <TimeSlot time="12:00" />
+                <TimeSlot time="13:00" />
+                <TimeSlot time="14:00" />
+                <TimeSlot time="15:00" />
+                <TimeSlot time="16:00" />
+                <TimeSlot time="17:00" />
+                <TimeSlot time="18:00" />
+                <TimeSlot time="19:00" />
+                <TimeSlot time="20:00" />
+                <TimeSlot time="21:00" />
+              </View>
+            </View>
           </View>
         );
       
