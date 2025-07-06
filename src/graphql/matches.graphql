@@ -1,0 +1,54 @@
+query GetMatches($upcoming: Boolean, $status: String) {
+  matches(upcoming: $upcoming, status: $status) {
+    id
+    matchDate
+    duration
+    description
+    competitive
+    playersNeeded
+    pricePerPerson
+    levelMin
+    levelMax
+    levelName
+    genderPreference
+    matchType
+    courtBooked
+    cancellationPolicy
+    createdAt
+    sport {
+      id
+      name
+    }
+    club {
+      id
+      name
+      city
+      district
+    }
+    court {
+      id
+      name
+      surface
+      indoor
+    }
+    organizer {
+      id
+      name
+      avatarUrl
+    }
+    participants {
+      id
+      name
+      avatarUrl
+    }
+    matchParticipants {
+      id
+      status
+      player {
+        id
+        name
+        avatarUrl
+      }
+    }
+  }
+} 

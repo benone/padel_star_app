@@ -1,3 +1,4 @@
+import { useGetMatchesQuery } from '@/src/generated/graphql';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Image, Modal, Pressable, ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
@@ -30,6 +31,22 @@ export default function ClubScheduleScreen()  {
   const [selectedSport, setSelectedSport] = useState<'padel' | 'tennis' | 'squash'>('padel');
   const [sportModalVisible, setSportModalVisible] = useState(false);
   
+  // GraphQL запрос для получения матчей
+  const { data: matchesData, loading: matchesLoading, error: matchesError } = useGetMatchesQuery({
+    variables: {
+      upcoming: true,
+      status: 'open'
+    }
+  });
+
+  let amenitiesRaw = params.amenities ? JSON.parse(params.amenities as string) : [];
+  let amenities: string[] = [];
+  if (Array.isArray(amenitiesRaw)) {
+    amenities = amenitiesRaw;
+  } else if (typeof amenitiesRaw === 'object' && amenitiesRaw !== null) {
+    amenities = Object.keys(amenitiesRaw).filter(key => amenitiesRaw[key]);
+  }
+
   const clubData = {
     id: params.clubId as string,
     name: params.clubName as string,
@@ -39,11 +56,12 @@ export default function ClubScheduleScreen()  {
     rating: params.clubRating ? parseFloat(params.clubRating as string) : null,
     reviewCount: params.clubReviewCount ? parseInt(params.clubReviewCount as string) : 0,
     imagesUrls: params.clubImagesUrls ? JSON.parse(params.clubImagesUrls as string) : [],
-    amenities: params.amenities ? JSON.parse(params.amenities as string) : [],
+    amenities,
     phone: params.phone as string || null,
     email: params.email as string || null,
     website: params.website as string || null,
-    workingHours: params.workingHours ? JSON.parse(params.workingHours as string) : null
+    workingHours: params.workingHours ? JSON.parse(params.workingHours as string) : null,
+    courts: params.courts ? JSON.parse(params.courts as string) : [],
   };
   
   const sports = [
@@ -51,6 +69,16 @@ export default function ClubScheduleScreen()  {
     { key: 'tennis', label: 'Теннис', icon: '🏸' },
     { key: 'squash', label: 'Сквош', icon: '🥎' },
   ];
+
+  const daysMapRu: { [key: string]: string } = {
+    monday: 'Понедельник',
+    tuesday: 'Вторник',
+    wednesday: 'Среда',
+    thursday: 'Четверг',
+    friday: 'Пятница',
+    saturday: 'Суббота',
+    sunday: 'Воскресенье',
+  };
 
   // Функция для генерации дат на 2 месяца вперед
   const generateDates = () => {
@@ -119,19 +147,19 @@ export default function ClubScheduleScreen()  {
 
   const TimeSlot = ({ time }: { time: string }) => {
     const isSelected = selectedTimes.has(time);
-    
+
     const handlePress = () => {
       setSelectedTimes(prev => {
-        const newSet = new Set(prev);
-        if (newSet.has(time)) {
-          newSet.delete(time);
+        // Если уже выбрано это время — снять выбор
+        if (prev.has(time)) {
+          return new Set();
         } else {
-          newSet.add(time);
+          // Иначе выбрать только это время
+          return new Set([time]);
         }
-        return newSet;
       });
     };
-    
+
     return (
       <Pressable 
         className={`h-12 rounded-lg w-[90px] items-center justify-center ${
@@ -246,16 +274,6 @@ export default function ClubScheduleScreen()  {
     
     console.log('Parsed workingHours:', workingHours);
     
-    const daysMap: { [key: string]: string } = {
-      monday: 'Понедельник',
-      tuesday: 'Вторник', 
-      wednesday: 'Среда',
-      thursday: 'Четверг',
-      friday: 'Пятница',
-      saturday: 'Суббота',
-      sunday: 'Воскресенье'
-    };
-    
     return (
       <View className="mb-6">
         <Text className="text-lg font-semibold text-slate-800 mb-3">
@@ -264,7 +282,7 @@ export default function ClubScheduleScreen()  {
         <View className="space-y-2">
           {Object.entries(workingHours).map(([day, hours]) => (
             <View key={day} className="flex-row justify-between items-center py-2 border-b border-gray-100">
-              <Text className="text-sm text-gray-600">{daysMap[day] || day}</Text>
+              <Text className="text-sm text-gray-600">{daysMapRu[day] || day}</Text>
               <Text className="text-sm font-medium text-slate-800">{hours as string}</Text>
             </View>
           ))}
@@ -413,17 +431,151 @@ export default function ClubScheduleScreen()  {
     );
   };
 
+  // Компонент карточки матча
+  const MatchCard = ({ match }: { match: any }) => {
+    const formatDate = (dateString: string) => {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('ru-RU', { weekday: 'long', day: '2-digit', month: 'long' }) +
+        ' | ' +
+        date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    };
+
+    // Собираем участников и свободные места
+    const players = match.participants || [];
+    const totalSlots = match.playersNeeded || 4;
+    const slots = [];
+    for (let i = 0; i < totalSlots; i++) {
+      slots.push(players[i] || null);
+    }
+
+    return (
+      <View className="bg-[#f8fafc] border border-gray-200 rounded-2xl p-4 mb-4">
+        {/* Дата и время */}
+        <Text className="text-base font-semibold text-slate-800 mb-2">
+          {formatDate(match.matchDate)}
+        </Text>
+        {/* Инфо о матче */}
+        <View className="flex-row items-center mb-3 space-x-4">
+          {match.competitive && (
+            <Text className="text-xs text-slate-700">🏆 Competitive</Text>
+          )}
+          <Text className="text-xs text-slate-700">
+            📈 {match.levelMin?.toFixed(2)} – {match.levelMax?.toFixed(2)}
+          </Text>
+          {match.genderPreference === 'male' && (
+            <Text className="text-xs text-slate-700">♂ Men only</Text>
+          )}
+          {match.genderPreference === 'female' && (
+            <Text className="text-xs text-slate-700">♀ Women only</Text>
+          )}
+        </View>
+        {/* Игроки */}
+        <View className="flex-row items-center justify-between mb-3">
+          {slots.map((player, idx) =>
+            player ? (
+              <View key={player.id} className="items-center flex-1">
+                <Image
+                  source={{ uri: player.avatarUrl || 'https://via.placeholder.com/40' }}
+                  className="w-10 h-10 rounded-full mb-1"
+                />
+                <Text className="text-xs font-medium text-slate-800">{player.name}</Text>
+                {player.level && (
+                  <Text className="text-xs bg-yellow-200 rounded px-1 mt-1">{player.level}</Text>
+                )}
+              </View>
+            ) : (
+              <View key={idx} className="items-center flex-1 opacity-60">
+                <View className="w-10 h-10 rounded-full border-2 border-dashed border-gray-300 items-center justify-center mb-1">
+                  <Text className="text-2xl text-gray-400">+</Text>
+                </View>
+                <Text className="text-xs text-blue-500">Available</Text>
+              </View>
+            )
+          )}
+        </View>
+        {/* Клуб и цена */}
+        <View className="flex-row items-center justify-between pt-3 border-t border-gray-100">
+          <View>
+            <Text className="text-sm font-medium text-slate-800">{match.club?.name}</Text>
+            <Text className="text-xs text-gray-500">{match.club?.city}</Text>
+          </View>
+          <View className="items-end">
+            <Text className="text-base font-semibold text-blue-700">
+              {match.pricePerPerson ? `${match.pricePerPerson} €` : 'Бесплатно'}
+            </Text>
+            <Text className="text-xs text-blue-700">{match.duration}min</Text>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
+  const renderMainTab = () => (
+    <View className="px-0">
+      
+
+      {/* Sport and courts */}
+      <View className="px-6 flex-row items-center mb-2">
+        <Text className="text-lg mr-2">🎾</Text>
+        <Text className="text-base text-gray-700 mr-4">{clubData.amenities?.includes('padel') ? 'Падел' : 'Вид спорта'}</Text>
+        <Text className="text-base text-gray-500">{clubData.courts?.length || 0} доступных кортов</Text>
+      </View>
+
+      {/* Amenities */}
+      <View className="px-6 flex-row flex-wrap gap-2 mb-4">
+        {Array.isArray(clubData.amenities) && clubData.amenities.map((amenity, idx) => (
+          <View key={idx} className="bg-gray-100 rounded-xl px-3 py-2 flex-row items-center">
+            <Text className="text-base mr-2">{getAmenityInfo(amenity).icon}</Text>
+            <Text className="text-xs text-gray-700 font-medium">{getAmenityInfo(amenity).name}</Text>
+          </View>
+        ))}
+      </View>
+
+      {/* Directions/Web/Call */}
+      <View className="flex-row justify-center items-center gap-x-6 mb-4 px-2">
+        <View className="items-center">
+          <View className="w-12 h-12 rounded-full bg-slate-900 items-center justify-center mb-1">
+            <Text className="text-white text-xl">↗️</Text>
+          </View>
+          <Text className="text-xs font-semibold text-slate-800">МАРШРУТ</Text>
+        </View>
+        <View className="items-center">
+          <View className="w-12 h-12 rounded-full bg-slate-900 items-center justify-center mb-1">
+            <Text className="text-white text-xl">🔗</Text>
+          </View>
+          <Text className="text-xs font-semibold text-slate-800">САЙТ</Text>
+        </View>
+        <View className="items-center">
+          <View className="w-12 h-12 rounded-full bg-slate-900 items-center justify-center mb-1">
+            <Text className="text-white text-xl">📞</Text>
+          </View>
+          <Text className="text-xs font-semibold text-slate-800">ПОЗВОНИТЬ</Text>
+        </View>
+      </View>
+
+      {/* Map (placeholder) */}
+      <View className="h-40 bg-gray-200 rounded-2xl mx-4 mb-4 items-center justify-center">
+        <Text className="text-gray-500">[Здесь будет карта]</Text>
+      </View>
+
+      {/* Opening hours */}
+      <View className="px-6 mb-6">
+        <Text className="text-lg font-bold text-slate-900 mb-3 text-center">Время работы</Text>
+        {clubData.workingHours && Object.entries(clubData.workingHours).map(([day, hours]) => (
+          <View key={day} className="flex-row justify-between items-center py-1">
+            <Text className="text-base text-gray-700">{daysMapRu[day] || day}</Text>
+            <Text className="text-base text-gray-900 font-semibold">{hours as string}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+
   // Функция для рендеринга контента в зависимости от активного таба
   const renderTabContent = () => {
     switch (activeTab) {
       case 'Главная':
-        return (
-          <View className="px-6"> 
-            {renderAmenities()}
-            {renderWorkingHours()}
-            {renderContactInfo()}
-          </View>
-        );
+        return renderMainTab();
       
       case 'Бронирование':
         return (
@@ -484,12 +636,15 @@ export default function ClubScheduleScreen()  {
                   <Pressable 
                     className="bg-slate-800 py-4 rounded-xl items-center"
                     onPress={() => {
+                      console.log('Выбранный спорт:', selectedSport);
+                      console.log('Выбранные времена:', Array.from(selectedTimes));
                       console.log('Выбранная дата:', selectedDate);
                       router.push({
                         pathname: "/Screens/OpenMatchesList",
                         params: {
                           clubId: clubData.id,
                           clubName: clubData.name,
+                          selectedSport: selectedSport,
                         }
                       });
                     }}
@@ -568,21 +723,19 @@ export default function ClubScheduleScreen()  {
               </ScrollView>
             </View>
 
-            {/* Time Slots Grid */}
-            <View className="">
-              <View className="flex-row flex-wrap gap-2.5 py-[5px]">
-                <TimeSlot time="12:00" />
-                <TimeSlot time="13:00" />
-                <TimeSlot time="14:00" />
-                <TimeSlot time="15:00" />
-                <TimeSlot time="16:00" />
-                <TimeSlot time="17:00" />
-                <TimeSlot time="18:00" />
-                <TimeSlot time="19:00" />
-                <TimeSlot time="20:00" />
-                <TimeSlot time="21:00" />
-              </View>
-            </View>
+            {/* Карточки открытых матчей */}
+            {matchesLoading && (
+              <Text className="text-center text-gray-500 my-6">Загрузка матчей...</Text>
+            )}
+            {matchesError && (
+              <Text className="text-center text-red-500 my-6">Ошибка загрузки матчей</Text>
+            )}
+            {matchesData?.matches?.length === 0 && !matchesLoading && (
+              <Text className="text-center text-gray-500 my-6">Нет открытых матчей</Text>
+            )}
+            {matchesData?.matches?.map((match: any) => (
+              <MatchCard key={match.id} match={match} />
+            ))}
           </View>
         );
       
@@ -637,9 +790,14 @@ export default function ClubScheduleScreen()  {
                 <Text className="text-2xl font-semibold text-slate-800 leading-8">
                   {clubData.name}
                 </Text>
+                <View className="flex-row items-center gap-x-1">
                 <Text className="text-base text-gray-600 leading-6 mt-1">
-                  {clubData.city}
+                  {clubData.city + " - "}
                 </Text>
+                  <Text className="text-base text-gray-400 leading-6 mt-1">
+                    {clubData.district}
+                  </Text>
+                </View>
               </View>
               <Pressable className="w-6 h-6">
                 <SvgXml xml={heartIcon} width={24} height={24} />

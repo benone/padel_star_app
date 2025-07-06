@@ -1222,6 +1222,14 @@ export type GetDefaultClubQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetDefaultClubQuery = { __typename?: 'Query', defaultClub?: { __typename?: 'Club', id: string, name: string, city?: string | null, description?: string | null, imagesUrls: Array<string>, courts: Array<{ __typename?: 'Court', id: string, name: string }> } | null };
 
+export type GetMatchesQueryVariables = Exact<{
+  upcoming?: InputMaybe<Scalars['Boolean']['input']>;
+  status?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+
+export type GetMatchesQuery = { __typename?: 'Query', matches: Array<{ __typename?: 'Match', id: string, matchDate: any, duration: number, description?: string | null, competitive: boolean, playersNeeded: number, pricePerPerson?: number | null, levelMin?: number | null, levelMax?: number | null, levelName?: string | null, genderPreference?: string | null, matchType?: string | null, courtBooked: boolean, cancellationPolicy?: string | null, createdAt: any, sport: { __typename?: 'Sport', id: string, name: string }, club: { __typename?: 'Club', id: string, name: string, city?: string | null, district?: string | null }, court?: { __typename?: 'Court', id: string, name: string, surface?: string | null, indoor: boolean } | null, organizer: { __typename?: 'Player', id: string, name: string, avatarUrl?: string | null }, participants: Array<{ __typename?: 'Player', id: string, name: string, avatarUrl?: string | null }>, matchParticipants: Array<{ __typename?: 'MatchParticipant', id: string, status: string, player: { __typename?: 'Player', id: string, name: string, avatarUrl?: string | null } }> }> };
+
 export type GetPlayersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -1552,6 +1560,96 @@ export type GetDefaultClubQueryHookResult = ReturnType<typeof useGetDefaultClubQ
 export type GetDefaultClubLazyQueryHookResult = ReturnType<typeof useGetDefaultClubLazyQuery>;
 export type GetDefaultClubSuspenseQueryHookResult = ReturnType<typeof useGetDefaultClubSuspenseQuery>;
 export type GetDefaultClubQueryResult = ApolloReactCommon.QueryResult<GetDefaultClubQuery, GetDefaultClubQueryVariables>;
+export const GetMatchesDocument = gql`
+    query GetMatches($upcoming: Boolean, $status: String) {
+  matches(upcoming: $upcoming, status: $status) {
+    id
+    matchDate
+    duration
+    description
+    competitive
+    playersNeeded
+    pricePerPerson
+    levelMin
+    levelMax
+    levelName
+    genderPreference
+    matchType
+    courtBooked
+    cancellationPolicy
+    createdAt
+    sport {
+      id
+      name
+    }
+    club {
+      id
+      name
+      city
+      district
+    }
+    court {
+      id
+      name
+      surface
+      indoor
+    }
+    organizer {
+      id
+      name
+      avatarUrl
+    }
+    participants {
+      id
+      name
+      avatarUrl
+    }
+    matchParticipants {
+      id
+      status
+      player {
+        id
+        name
+        avatarUrl
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetMatchesQuery__
+ *
+ * To run a query within a React component, call `useGetMatchesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetMatchesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetMatchesQuery({
+ *   variables: {
+ *      upcoming: // value for 'upcoming'
+ *      status: // value for 'status'
+ *   },
+ * });
+ */
+export function useGetMatchesQuery(baseOptions?: Apollo.QueryHookOptions<GetMatchesQuery, GetMatchesQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetMatchesQuery, GetMatchesQueryVariables>(GetMatchesDocument, options);
+      }
+export function useGetMatchesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetMatchesQuery, GetMatchesQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetMatchesQuery, GetMatchesQueryVariables>(GetMatchesDocument, options);
+        }
+export function useGetMatchesSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetMatchesQuery, GetMatchesQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetMatchesQuery, GetMatchesQueryVariables>(GetMatchesDocument, options);
+        }
+export type GetMatchesQueryHookResult = ReturnType<typeof useGetMatchesQuery>;
+export type GetMatchesLazyQueryHookResult = ReturnType<typeof useGetMatchesLazyQuery>;
+export type GetMatchesSuspenseQueryHookResult = ReturnType<typeof useGetMatchesSuspenseQuery>;
+export type GetMatchesQueryResult = ApolloReactCommon.QueryResult<GetMatchesQuery, GetMatchesQueryVariables>;
 export const GetPlayersDocument = gql`
     query GetPlayers {
   players {
