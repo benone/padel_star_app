@@ -12,6 +12,8 @@ query GetClubs {
     phone
     email
     website
+    latitude
+    longitude
     courts {
       id
       name

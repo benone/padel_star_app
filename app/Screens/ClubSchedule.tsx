@@ -2,9 +2,9 @@ import { useGetMatchesQuery } from '@/src/generated/graphql';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Image, Modal, Pressable, ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SvgXml } from 'react-native-svg';
-
 // SVG icons as strings
 const heartIcon = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.42 22 8.5C22 12.28 18.6 15.36 13.45 20.04L12 21.35Z" stroke="#6B7280" stroke-width="2" fill="none"/>
@@ -62,6 +62,8 @@ export default function ClubScheduleScreen()  {
     website: params.website as string || null,
     workingHours: params.workingHours ? JSON.parse(params.workingHours as string) : null,
     courts: params.courts ? JSON.parse(params.courts as string) : [],
+    latitude: params.latitude ? parseFloat(params.latitude as string) : 39.4375,
+    longitude: params.longitude ? parseFloat(params.longitude as string) : -0.3275,
   };
   
   const sports = [
@@ -554,9 +556,26 @@ export default function ClubScheduleScreen()  {
       </View>
 
       {/* Map (placeholder) */}
-      <View className="h-40 bg-gray-200 rounded-2xl mx-4 mb-4 items-center justify-center">
-        <Text className="text-gray-500">[Здесь будет карта]</Text>
-      </View>
+      <View className="h-40 rounded-2xl mx-4 mb-4 overflow-hidden">
+     <MapView
+       style={{ flex: 1 }}
+       initialRegion={{
+         latitude: clubData.latitude, // Пример: координаты Валенсии
+         longitude: clubData.longitude,
+         latitudeDelta: 0.01,
+         longitudeDelta: 0.01,
+       }}
+     >
+       <Marker  
+         coordinate={{
+           latitude: clubData.latitude,
+           longitude: clubData.longitude,
+         }}
+         title={clubData.name}
+         description={clubData.city}
+       />
+     </MapView>
+   </View>
 
       {/* Opening hours */}
       <View className="px-6 mb-6">

@@ -1208,7 +1208,7 @@ export type LoginPlayerMutation = { __typename?: 'Mutation', loginPlayer?: { __t
 export type GetClubsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetClubsQuery = { __typename?: 'Query', clubs: Array<{ __typename?: 'Club', id: string, name: string, city?: string | null, district?: string | null, description?: string | null, imagesUrls: Array<string>, amenities?: any | null, rating?: number | null, reviewCount: number, phone?: string | null, email?: string | null, website?: string | null, workingHours?: any | null, courts: Array<{ __typename?: 'Court', id: string, name: string, surface?: string | null, indoor: boolean }> }> };
+export type GetClubsQuery = { __typename?: 'Query', clubs: Array<{ __typename?: 'Club', id: string, name: string, city?: string | null, district?: string | null, description?: string | null, imagesUrls: Array<string>, amenities?: any | null, rating?: number | null, reviewCount: number, phone?: string | null, email?: string | null, website?: string | null, latitude?: number | null, longitude?: number | null, workingHours?: any | null, courts: Array<{ __typename?: 'Court', id: string, name: string, surface?: string | null, indoor: boolean }> }> };
 
 export type GetClubQueryVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -1245,7 +1245,12 @@ export type GetPlayerQuery = { __typename?: 'Query', player?: { __typename?: 'Pl
 export type GetCurrentPlayerQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetCurrentPlayerQuery = { __typename?: 'Query', currentPlayer?: { __typename?: 'Player', id: string, name: string, email: string, phone?: string | null, avatarUrl?: string | null, level?: number | null, levelName?: string | null, age?: number | null, address?: string | null, createdAt: any } | null };
+export type GetCurrentPlayerQuery = { __typename?: 'Query', currentPlayer?: { __typename?: 'Player', id: string, name: string, avatarUrl?: string | null, email: string, phone?: string | null, level?: number | null, levelName?: string | null, age?: number | null, address?: string | null, createdAt: any } | null };
+
+export type GetCurrentPlayerProfileQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetCurrentPlayerProfileQuery = { __typename?: 'Query', currentPlayer?: { __typename?: 'Player', id: string, name: string, avatarUrl?: string | null, email: string, phone?: string | null, level?: number | null, levelName?: string | null, age?: number | null, address?: string | null, createdAt: any, followers: Array<{ __typename?: 'Player', id: string }>, following: Array<{ __typename?: 'Player', id: string }> } | null };
 
 
 export const SendTelegramVerificationCodeDocument = gql`
@@ -1399,6 +1404,8 @@ export const GetClubsDocument = gql`
     phone
     email
     website
+    latitude
+    longitude
     courts {
       id
       name
@@ -1751,9 +1758,9 @@ export const GetCurrentPlayerDocument = gql`
   currentPlayer {
     id
     name
+    avatarUrl
     email
     phone
-    avatarUrl
     level
     levelName
     age
@@ -1794,3 +1801,57 @@ export type GetCurrentPlayerQueryHookResult = ReturnType<typeof useGetCurrentPla
 export type GetCurrentPlayerLazyQueryHookResult = ReturnType<typeof useGetCurrentPlayerLazyQuery>;
 export type GetCurrentPlayerSuspenseQueryHookResult = ReturnType<typeof useGetCurrentPlayerSuspenseQuery>;
 export type GetCurrentPlayerQueryResult = ApolloReactCommon.QueryResult<GetCurrentPlayerQuery, GetCurrentPlayerQueryVariables>;
+export const GetCurrentPlayerProfileDocument = gql`
+    query GetCurrentPlayerProfile {
+  currentPlayer {
+    id
+    name
+    avatarUrl
+    email
+    phone
+    level
+    levelName
+    age
+    address
+    createdAt
+    followers {
+      id
+    }
+    following {
+      id
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetCurrentPlayerProfileQuery__
+ *
+ * To run a query within a React component, call `useGetCurrentPlayerProfileQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetCurrentPlayerProfileQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetCurrentPlayerProfileQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetCurrentPlayerProfileQuery(baseOptions?: Apollo.QueryHookOptions<GetCurrentPlayerProfileQuery, GetCurrentPlayerProfileQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetCurrentPlayerProfileQuery, GetCurrentPlayerProfileQueryVariables>(GetCurrentPlayerProfileDocument, options);
+      }
+export function useGetCurrentPlayerProfileLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetCurrentPlayerProfileQuery, GetCurrentPlayerProfileQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetCurrentPlayerProfileQuery, GetCurrentPlayerProfileQueryVariables>(GetCurrentPlayerProfileDocument, options);
+        }
+export function useGetCurrentPlayerProfileSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetCurrentPlayerProfileQuery, GetCurrentPlayerProfileQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetCurrentPlayerProfileQuery, GetCurrentPlayerProfileQueryVariables>(GetCurrentPlayerProfileDocument, options);
+        }
+export type GetCurrentPlayerProfileQueryHookResult = ReturnType<typeof useGetCurrentPlayerProfileQuery>;
+export type GetCurrentPlayerProfileLazyQueryHookResult = ReturnType<typeof useGetCurrentPlayerProfileLazyQuery>;
+export type GetCurrentPlayerProfileSuspenseQueryHookResult = ReturnType<typeof useGetCurrentPlayerProfileSuspenseQuery>;
+export type GetCurrentPlayerProfileQueryResult = ApolloReactCommon.QueryResult<GetCurrentPlayerProfileQuery, GetCurrentPlayerProfileQueryVariables>;

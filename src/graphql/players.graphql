@@ -31,13 +31,30 @@ query GetCurrentPlayer {
   currentPlayer {
     id
     name
+    avatarUrl
     email
     phone
-    avatarUrl
     level
     levelName
     age
     address
     createdAt
+  }
+}
+
+query GetCurrentPlayerProfile {
+  currentPlayer {
+    id
+    name
+    avatarUrl
+    email
+    phone
+    level
+    levelName
+    age
+    address
+    createdAt
+    followers { id }
+    following { id }
   }
 }
