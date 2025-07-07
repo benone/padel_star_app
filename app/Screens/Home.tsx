@@ -8,11 +8,13 @@ import Banner from '@/components/ui/Banner';
 import CardWithImage from '@/components/ui/HomePage/CardWithImage';
 import SmallCard from '@/components/ui/HomePage/SmallCard';
 import TopBar from '@/components/ui/TopBar';
-import { useGetClubsLazyQuery } from '@/src/generated/graphql';
+import { useGetClubsLazyQuery, useGetCurrentPlayerQuery } from '@/src/generated/graphql';
 import { showError } from '@/src/utils/crossPlatformAlert';
 
 export default function Home() {
   const [getClubs, { loading: clubsLoading }] = useGetClubsLazyQuery();
+  const { data, loading, error } = useGetCurrentPlayerQuery();
+  const player = data?.currentPlayer;
 
   const handleCourtBookingPress = async () => {
     if (clubsLoading) return; // Предотвращаем повторные нажатия
@@ -44,7 +46,7 @@ export default function Home() {
         <View className="flex flex-col flex-1">
           {/* Top Bar */}
           <TopBar
-            welcomeText="Привет, Кирилл 👋"
+            welcomeText={`Привет, ${player?.name || ''} 👋`}
             onNotificationPress={() => console.log('Notification pressed')}
             onMenuPress={() => router.push('/system-preview')}
           />

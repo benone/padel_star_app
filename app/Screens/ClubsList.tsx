@@ -93,9 +93,6 @@ function ClubCard({ club, index, isLiked, onToggleLike, ...props }: ClubCardProp
       className="bg-white rounded-2xl mb-4 mx-4 shadow-sm border border-gray-200 overflow-hidden"
       data-name="div"
       onPress={() => {
-        console.log('=== CLUBS LIST DEBUG ===');
-        console.log('club.workingHours:', club.workingHours);
-        
         router.push({
           pathname: '/Screens/ClubSchedule',
           params: {

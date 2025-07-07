@@ -1,0 +1,11 @@
+query GetCurrentPlayer {
+  currentPlayer {
+    id
+    name
+    avatarUrl
+    location
+    matchesCount
+    followersCount
+    followingCount
+  }
+} 
