@@ -1208,14 +1208,14 @@ export type LoginPlayerMutation = { __typename?: 'Mutation', loginPlayer?: { __t
 export type GetClubsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetClubsQuery = { __typename?: 'Query', clubs: Array<{ __typename?: 'Club', id: string, name: string, city?: string | null, district?: string | null, description?: string | null, imagesUrls: Array<string>, amenities?: any | null, rating?: number | null, reviewCount: number, phone?: string | null, email?: string | null, website?: string | null, latitude?: number | null, longitude?: number | null, workingHours?: any | null, courts: Array<{ __typename?: 'Court', id: string, name: string, surface?: string | null, indoor: boolean }> }> };
+export type GetClubsQuery = { __typename?: 'Query', clubs: Array<{ __typename?: 'Club', id: string, name: string, city?: string | null, district?: string | null, description?: string | null, imagesUrls: Array<string>, amenities?: any | null, rating?: number | null, reviewCount: number, phone?: string | null, email?: string | null, website?: string | null, latitude?: number | null, longitude?: number | null, workingHours?: any | null, courts: Array<{ __typename?: 'Court', id: string, clubId: string, clubSportId: string, name: string, surface?: string | null, indoor: boolean, lighting: boolean, status: string, maintenanceNotes?: string | null, createdAt: any, updatedAt: any, matches: Array<{ __typename?: 'Match', id: string, bookingId?: string | null, cancellationPolicy?: string | null, cancelledAt?: any | null, clubId: string, competitive: boolean, courtBooked: boolean, courtId?: string | null, createdAt: any, description?: string | null, duration: number, durationPlayed?: number | null, finalScore?: string | null, genderPreference?: string | null, levelMax?: number | null, levelMin?: number | null, levelName?: string | null, matchDate: any, matchType?: string | null, organizerId: string, playersNeeded: number, pricePerPerson?: number | null, sportId: string, spotsAvailable: number, status: string, totalPlayers: number, updatedAt: any, winnerTeam?: string | null }> }> }> };
 
 export type GetClubQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type GetClubQuery = { __typename?: 'Query', club?: { __typename?: 'Club', id: string, name: string, city?: string | null, district?: string | null, country?: string | null, postalCode?: string | null, description?: string | null, imagesUrls: Array<string>, amenities?: any | null, phone?: string | null, email?: string | null, rating?: number | null, reviewCount: number, latitude?: number | null, longitude?: number | null, workingHours?: any | null, courts: Array<{ __typename?: 'Court', id: string, name: string, surface?: string | null, indoor: boolean }>, reviews: Array<{ __typename?: 'Review', id: string, rating: number, content?: string | null, createdAt: any, player: { __typename?: 'Player', id: string, name: string, avatarUrl?: string | null } }> } | null };
+export type GetClubQuery = { __typename?: 'Query', club?: { __typename?: 'Club', id: string, name: string, city?: string | null, district?: string | null, country?: string | null, postalCode?: string | null, description?: string | null, imagesUrls: Array<string>, amenities?: any | null, phone?: string | null, email?: string | null, rating?: number | null, reviewCount: number, latitude?: number | null, longitude?: number | null, workingHours?: any | null, courts: Array<{ __typename?: 'Court', id: string, name: string, surface?: string | null, indoor: boolean, status: string }>, reviews: Array<{ __typename?: 'Review', id: string, rating: number, content?: string | null, createdAt: any, player: { __typename?: 'Player', id: string, name: string, avatarUrl?: string | null } }> } | null };
 
 export type GetDefaultClubQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1408,9 +1408,46 @@ export const GetClubsDocument = gql`
     longitude
     courts {
       id
+      clubId
+      clubSportId
       name
       surface
       indoor
+      lighting
+      status
+      maintenanceNotes
+      createdAt
+      updatedAt
+      matches {
+        id
+        bookingId
+        cancellationPolicy
+        cancelledAt
+        clubId
+        competitive
+        courtBooked
+        courtId
+        createdAt
+        description
+        duration
+        durationPlayed
+        finalScore
+        genderPreference
+        levelMax
+        levelMin
+        levelName
+        matchDate
+        matchType
+        organizerId
+        playersNeeded
+        pricePerPerson
+        sportId
+        spotsAvailable
+        status
+        totalPlayers
+        updatedAt
+        winnerTeam
+      }
     }
     workingHours
   }
@@ -1471,6 +1508,7 @@ export const GetClubDocument = gql`
       name
       surface
       indoor
+      status
     }
     workingHours
     reviews {

@@ -16,9 +16,46 @@ query GetClubs {
     longitude
     courts {
       id
+      clubId
+      clubSportId
       name
       surface
       indoor
+      lighting
+      status
+      maintenanceNotes
+      createdAt
+      updatedAt
+      matches {
+        id
+        bookingId
+        cancellationPolicy
+        cancelledAt
+        clubId
+        competitive
+        courtBooked
+        courtId
+        createdAt
+        description
+        duration
+        durationPlayed
+        finalScore
+        genderPreference
+        levelMax
+        levelMin
+        levelName
+        matchDate
+        matchType
+        organizerId
+        playersNeeded
+        pricePerPerson
+        sportId
+        spotsAvailable
+        status
+        totalPlayers
+        updatedAt
+        winnerTeam
+      }
     }
     workingHours
   }
@@ -46,6 +83,7 @@ query GetClub($id: ID!) {
       name
       surface
       indoor
+      status
     }
     workingHours
     reviews {

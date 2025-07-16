@@ -18,6 +18,7 @@ export const GetClubsDocument = gql`
       name
       surface
       indoor
+      status
     }
     workingHours
   }
@@ -76,6 +77,7 @@ export const GetClubsDocument = gql`
       name
       surface
       indoor
+      status
     }
     workingHours
   }

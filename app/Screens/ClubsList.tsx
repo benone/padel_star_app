@@ -75,6 +75,9 @@ interface ClubCardProps {
     email?: string | null;
     website?: string | null;
     workingHours?: any | null;
+    latitude?: number | null;
+    longitude?: number | null;
+    courts?: any | null;
   };
   index: number;
   isLiked: boolean;
@@ -108,7 +111,10 @@ function ClubCard({ club, index, isLiked, onToggleLike, ...props }: ClubCardProp
             phone: club.phone || '',
             email: club.email || '',
             website: club.website || '',
-            workingHours: JSON.stringify(club.workingHours)
+            workingHours: JSON.stringify(club.workingHours),
+            courts: JSON.stringify(club.courts), // Изменено с clubCourts на courts
+            latitude: club.latitude?.toString() || '',
+            longitude: club.longitude?.toString() || '',
           }
         })
       }}
