@@ -1,4 +1,4 @@
-import { useGetMatchesQuery } from '@/src/generated/graphql';
+import { useGetClubsQuery, useGetMatchesQuery } from '@/src/generated/graphql';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Image, Modal, Pressable, ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
@@ -40,6 +40,12 @@ export default function ClubScheduleScreen()  {
       status: 'open'
     }
   });
+
+  // GraphQL запрос для получения данных клуба с видами спорта
+  const { data: clubsData, loading: clubsLoading, error: clubsError } = useGetClubsQuery();
+  
+  // Находим текущий клуб из полученных данных
+  const currentClub = clubsData?.clubs?.find(club => club.id === params.clubId);
 
   let amenitiesRaw = params.amenities ? JSON.parse(params.amenities as string) : [];
   let amenities: string[] = [];
@@ -313,8 +319,20 @@ export default function ClubScheduleScreen()  {
 
   // Селектор спорта с иконкой ракетки
   const SportDropdown = () => {
+    // Получаем доступные виды спорта из данных клуба
+    const availableSports = currentClub?.sports?.filter(sport => sport.active) || [];
+    
+    // Если нет данных о видах спорта, используем статичные данные
+    const sportsToShow = availableSports.length > 0 ? availableSports : sports;
+    
     // Получаем текущий выбранный спорт
-    const currentSport = sports.find(sport => sport.key === selectedSport);
+    const currentSport = sportsToShow.find(sport => {
+      if ('key' in sport) {
+        return sport.key === selectedSport;
+      } else {
+        return sport.slug === selectedSport;
+      }
+    });
     
     return (
       <View>
@@ -323,10 +341,14 @@ export default function ClubScheduleScreen()  {
           className="w-12 h-12 rounded-lg bg-gray-100 items-center justify-center mr-2 mt-6 mb-2"
           style={{ marginRight: 8 }}
         >
-          <Text style={{ fontSize: 24 }}>{currentSport?.icon || '🎾'}</Text>
+          <Text style={{ fontSize: 24 }}>
+            {currentSport?.icon || '🎾'}
+          </Text>
         </TouchableOpacity>
         
-        <Text style={{ fontSize: 12 }}>{currentSport?.label || ''}</Text>
+        <Text style={{ fontSize: 12 }}>
+          {currentSport ? ('name' in currentSport ? currentSport.name : 'label' in currentSport ? currentSport.label : '') : ''}
+        </Text>
         <Modal
           visible={sportModalVisible}
           transparent
@@ -368,34 +390,46 @@ export default function ClubScheduleScreen()  {
 
               {/* Список видов спорта */}
               <View className="space-y-3">
-                {sports.map((sport) => (
-                  <TouchableOpacity
-                    key={sport.key}
-                    className={`flex-row items-center p-4 rounded-xl mb-4 ${
-                      selectedSport === sport.key 
-                        ? 'bg-slate-800' 
-                        : 'bg-gray-100'
-                    }`}
-                    onPress={() => {
-                      setSelectedSport(sport.key as 'padel' | 'tennis' | 'squash');
-                      setSportModalVisible(false);
-                    }}
-                  >
-                    <Text className="text-2xl mr-4">{sport.icon}</Text>
-                    <Text className={`text-lg font-medium ${
-                      selectedSport === sport.key 
-                        ? 'text-white' 
-                        : 'text-gray-700'
-                    }`}>
-                      {sport.label}
-                    </Text>
-                    {selectedSport === sport.key && (
-                      <View className="ml-auto">
-                        <Text className="text-white text-lg">✓</Text>
+                {sportsToShow.map((sport) => {
+                  const sportKey = 'key' in sport ? sport.key : sport.slug;
+                  const sportName = 'name' in sport ? sport.name : sport.label;
+                  const sportIcon = sport.icon || '🎾';
+                  const isSelected = selectedSport === sportKey;
+                  
+                  return (
+                    <TouchableOpacity
+                      key={sportKey}
+                      className={`flex-row items-center p-4 rounded-xl mb-4 ${
+                        isSelected ? 'bg-slate-800' : 'bg-gray-100'
+                      }`}
+                      onPress={() => {
+                        setSelectedSport(sportKey as 'padel' | 'tennis' | 'squash');
+                        setSportModalVisible(false);
+                      }}
+                    >
+                      <Text className="text-2xl mr-4">{sportIcon}</Text>
+                      <View className="flex-1">
+                        <Text className={`text-lg font-medium ${
+                          isSelected ? 'text-white' : 'text-gray-700'
+                        }`}>
+                          {sportName}
+                        </Text>
+                        {'description' in sport && sport.description && (
+                          <Text className={`text-sm ${
+                            isSelected ? 'text-gray-200' : 'text-gray-500'
+                          }`}>
+                            {sport.description}
+                          </Text>
+                        )}
                       </View>
-                    )}
-                  </TouchableOpacity>
-                ))}
+                      {isSelected && (
+                        <View className="ml-auto">
+                          <Text className="text-white text-lg">✓</Text>
+                        </View>
+                      )}
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
             </View>
           </TouchableOpacity>
@@ -404,88 +438,49 @@ export default function ClubScheduleScreen()  {
     );
   };
 
-  // Компонент карточки матча
-  const MatchCard = ({ match }: { match: any }) => {
-    const formatDate = (dateString: string) => {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('ru-RU', { weekday: 'long', day: '2-digit', month: 'long' }) +
-        ' | ' +
-        date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-    };
-
-    // Собираем участников и свободные места
-    const players = match.participants || [];
-    const totalSlots = match.playersNeeded || 4;
-    const slots = [];
-    for (let i = 0; i < totalSlots; i++) {
-      slots.push(players[i] || null);
-    }
-
-    return (
-      <View className="bg-[#f8fafc] border border-gray-200 rounded-2xl p-4 mb-4">
-        {/* Дата и время */}
-        <Text className="text-base font-semibold text-slate-800 mb-2">
-          {formatDate(match.matchDate)}
-        </Text>
-        {/* Инфо о матче */}
-        <View className="flex-row items-center mb-3 space-x-4">
-          {match.competitive && (
-            <Text className="text-xs text-slate-700">🏆 Competitive</Text>
-          )}
-          <Text className="text-xs text-slate-700">
-            📈 {match.levelMin?.toFixed(2)} – {match.levelMax?.toFixed(2)}
-          </Text>
-          {match.genderPreference === 'male' && (
-            <Text className="text-xs text-slate-700">♂ Men only</Text>
-          )}
-          {match.genderPreference === 'female' && (
-            <Text className="text-xs text-slate-700">♀ Women only</Text>
-          )}
-        </View>
-        {/* Игроки */}
-        <View className="flex-row items-center justify-between mb-3">
-          {slots.map((player, idx) =>
-            player ? (
-              <View key={player.id} className="items-center flex-1">
-                <Image
-                  source={{ uri: player.avatarUrl || 'https://via.placeholder.com/40' }}
-                  className="w-10 h-10 rounded-full mb-1"
-                />
-                <Text className="text-xs font-medium text-slate-800">{player.name}</Text>
-                {player.level && (
-                  <Text className="text-xs bg-yellow-200 rounded px-1 mt-1">{player.level}</Text>
-                )}
-              </View>
-            ) : (
-              <View key={idx} className="items-center flex-1 opacity-60">
-                <View className="w-10 h-10 rounded-full border-2 border-dashed border-gray-300 items-center justify-center mb-1">
-                  <Text className="text-2xl text-gray-400">+</Text>
-                </View>
-                <Text className="text-xs text-blue-500">Available</Text>
-              </View>
-            )
-          )}
-        </View>
-        {/* Клуб и цена */}
-        <View className="flex-row items-center justify-between pt-3 border-t border-gray-100">
-          <View>
-            <Text className="text-sm font-medium text-slate-800">{match.club?.name}</Text>
-            <Text className="text-xs text-gray-500">{match.club?.city}</Text>
-          </View>
-          <View className="items-end">
-            <Text className="text-base font-semibold text-blue-700">
-              {match.pricePerPerson ? `${match.pricePerPerson} €` : 'Бесплатно'}
-            </Text>
-            <Text className="text-xs text-blue-700">{match.duration}min</Text>
-          </View>
-        </View>
-      </View>
-    );
-  };
 
   const renderMainTab = () => (
     <View className="px-0">
-      
+      {/* Available Sports */}
+      {currentClub?.sports && currentClub.sports.length > 0 && (
+        <View className="px-6 mb-4">
+          <Text className="text-lg font-bold text-slate-900 mb-3">Доступные виды спорта</Text>
+          <View className="flex-row flex-wrap gap-2">
+            {currentClub.sports
+              .filter(sport => sport.active)
+              .map((sport) => (
+                <View key={sport.id} className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex-row items-center">
+                  <Text className="text-xl mr-3">{sport.icon || '🎾'}</Text>
+                  <View className="flex-1">
+                    <Text className="text-sm font-semibold text-slate-800">{sport.name}</Text>
+                    {sport.description && (
+                      <Text className="text-xs text-gray-600 mt-1" numberOfLines={2}>
+                        {sport.description}
+                      </Text>
+                    )}
+                    <View className="flex-row items-center mt-1">
+                      <Text className="text-xs text-gray-500">
+                        {sport.minPlayers}-{sport.maxPlayers} игроков
+                      </Text>
+                      {sport.typicalDuration && (
+                        <Text className="text-xs text-gray-500 ml-2">
+                          • {sport.typicalDuration} мин
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                  {sport.popular && (
+                    <View className="ml-2">
+                      <Text className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
+                        Популярный
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              ))}
+          </View>
+        </View>
+      )}
 
       {/* Sport and courts */}
       <View className="px-6 flex-row items-center mb-2">
@@ -1213,6 +1208,85 @@ export default function ClubScheduleScreen()  {
       default:
         return null;
     }
+  };
+
+  // Компонент карточки матча
+  const MatchCard = ({ match }: { match: any }) => {
+    const formatDate = (dateString: string) => {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('ru-RU', { weekday: 'long', day: '2-digit', month: 'long' }) +
+        ' | ' +
+        date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    };
+
+    // Собираем участников и свободные места
+    const players = match.participants || [];
+    const totalSlots = match.playersNeeded || 4;
+    const slots = [];
+    for (let i = 0; i < totalSlots; i++) {
+      slots.push(players[i] || null);
+    }
+
+    return (
+      <View className="bg-[#f8fafc] border border-gray-200 rounded-2xl p-4 mb-4">
+        {/* Дата и время */}
+        <Text className="text-base font-semibold text-slate-800 mb-2">
+          {formatDate(match.matchDate)}
+        </Text>
+        {/* Инфо о матче */}
+        <View className="flex-row items-center mb-3 space-x-4">
+          {match.competitive && (
+            <Text className="text-xs text-slate-700">🏆 Competitive</Text>
+          )}
+          <Text className="text-xs text-slate-700">
+            📈 {match.levelMin?.toFixed(2)} – {match.levelMax?.toFixed(2)}
+          </Text>
+          {match.genderPreference === 'male' && (
+            <Text className="text-xs text-slate-700">♂ Men only</Text>
+          )}
+          {match.genderPreference === 'female' && (
+            <Text className="text-xs text-slate-700">♀ Women only</Text>
+          )}
+        </View>
+        {/* Игроки */}
+        <View className="flex-row items-center justify-between mb-3">
+          {slots.map((player, idx) =>
+            player ? (
+              <View key={player.id} className="items-center flex-1">
+                <Image
+                  source={{ uri: player.avatarUrl || 'https://via.placeholder.com/40' }}
+                  className="w-10 h-10 rounded-full mb-1"
+                />
+                <Text className="text-xs font-medium text-slate-800">{player.name}</Text>
+                {player.level && (
+                  <Text className="text-xs bg-yellow-200 rounded px-1 mt-1">{player.level}</Text>
+                )}
+              </View>
+            ) : (
+              <View key={idx} className="items-center flex-1 opacity-60">
+                <View className="w-10 h-10 rounded-full border-2 border-dashed border-gray-300 items-center justify-center mb-1">
+                  <Text className="text-2xl text-gray-400">+</Text>
+                </View>
+                <Text className="text-xs text-blue-500">Available</Text>
+              </View>
+            )
+          )}
+        </View>
+        {/* Клуб и цена */}
+        <View className="flex-row items-center justify-between pt-3 border-t border-gray-100">
+          <View>
+            <Text className="text-sm font-medium text-slate-800">{match.club?.name}</Text>
+            <Text className="text-xs text-gray-500">{match.club?.city}</Text>
+          </View>
+          <View className="items-end">
+            <Text className="text-base font-semibold text-blue-700">
+              {match.pricePerPerson ? `${match.pricePerPerson} €` : 'Бесплатно'}
+            </Text>
+            <Text className="text-xs text-blue-700">{match.duration}min</Text>
+          </View>
+        </View>
+      </View>
+    );
   };
 
   return (

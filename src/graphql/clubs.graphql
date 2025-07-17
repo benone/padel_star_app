@@ -14,6 +14,21 @@ query GetClubs {
     website
     latitude
     longitude
+    sports {
+      id
+      name
+      slug
+      description
+      icon
+      minPlayers
+      maxPlayers
+      typicalDuration
+      popular
+      active
+      equipment
+      createdAt
+      updatedAt
+    }
     courts {
       id
       clubId
