@@ -442,7 +442,7 @@ export default function ClubScheduleScreen()  {
   const renderMainTab = () => (
     <View className="px-0">
       {/* Available Sports */}
-      {currentClub?.sports && currentClub.sports.length > 0 && (
+      {/* {currentClub?.sports && currentClub.sports.length > 0 && (
         <View className="px-6 mb-4">
           <Text className="text-lg font-bold text-slate-900 mb-3">Доступные виды спорта</Text>
           <View className="flex-row flex-wrap gap-2">
@@ -480,14 +480,14 @@ export default function ClubScheduleScreen()  {
               ))}
           </View>
         </View>
-      )}
+      )} */}
 
       {/* Sport and courts */}
-      <View className="px-6 flex-row items-center mb-2">
+      {/*<View className="px-6 flex-row items-center mb-2">
         <Text className="text-lg mr-2">🎾</Text>
         <Text className="text-base text-gray-700 mr-4">{clubData.amenities?.includes('padel') ? 'Падел' : 'Вид спорта'}</Text>
-        <Text className="text-base text-gray-500">{clubData.courts?.length || 0} доступных кортов</Text>
-      </View>
+        <Text className="text-base text-gray-500">Доступно кортов: {clubData.courts?.length || 0}</Text>
+      </View>*/}
 
       {/* Amenities */}
       <View className="px-6 flex-row flex-wrap gap-2 mb-4">
@@ -662,11 +662,20 @@ export default function ClubScheduleScreen()  {
     }
   }, [timeSlots, selectedDate]);
 
-  const TimeSlot = ({ time }: { time: string }) => {
+  const TimeSlot = ({ time, index }: { time: string; index: number }) => {
     const isSelected = selectedTimes.has(time);
     const hasMatches = getTimeSlotsWithMatches().has(time);
+    const isDisabled = index === 1; // Вторая ячейка (индекс 1) будет недоступна
+    const isLastSlot = index === timeSlots.length - 1; // Последняя ячейка
+
+    // Скрываем последнюю ячейку полностью
+    if (isLastSlot) {
+      return null;
+    }
 
     const handlePress = () => {
+      if (isDisabled) return; // Блокируем нажатие для недоступной ячейки
+      
       setSelectedTimes(prev => {
         if (prev.has(time)) {
           return new Set();
@@ -676,19 +685,30 @@ export default function ClubScheduleScreen()  {
       });
     };
 
+    const isAvailable = isTimeSlotAvailable(time);
+    // Скрываем недоступные и заблокированные слоты, если включен переключатель
+    if (hideUnavailableSlots && (!isAvailable || isDisabled) && !isSelected) {
+      return null;
+    }
+
     return (
       <Pressable 
         className={`h-12 rounded-lg w-[85px] items-center justify-center relative ${
-          isSelected 
+          isDisabled
+            ? 'bg-gray-200 border border-gray-300 opacity-50'
+            : isSelected 
             ? 'bg-slate-800' 
             : hasMatches
             ? 'bg-blue-50 border-2 border-blue-300'
             : 'bg-gray-100 border border-gray-200'
         }`}
         onPress={handlePress}
+        disabled={isDisabled}
       >
         <Text className={`text-base font-medium ${
-          isSelected 
+          isDisabled
+            ? 'text-gray-500 line-through'
+            : isSelected 
             ? 'text-white' 
             : hasMatches 
             ? 'text-blue-700' 
@@ -698,7 +718,7 @@ export default function ClubScheduleScreen()  {
         </Text>
         
         {/* Индикатор матчей */}
-        {hasMatches && !isSelected && (
+        {hasMatches && !isSelected && !isDisabled && (
           <View className="absolute -top-1 -right-1 w-3 h-3 border-2 border-blue-300 rounded-full items-center justify-center">
             <Text className="text-white text-xs font-bold bg- rounded-full p-1">🎾</Text>
           </View>
@@ -720,6 +740,55 @@ export default function ClubScheduleScreen()  {
 
     // Показываем корт только если доступно бронирование хотя бы на одну продолжительность
     return isAvailableFor60 || isAvailableFor90;
+  };
+
+  // Функция для получения цены в зависимости от выбранного вида спорта и продолжительности
+  const getBookingPrice = (duration: number) => {
+    if (!currentClub?.clubSports || currentClub.clubSports.length === 0) {
+      // Если нет данных о ценах, возвращаем дефолтные значения
+      return duration === 60 ? '12,95₽' : '19,42₽';
+    }
+
+    // Находим выбранный вид спорта
+    const selectedSportData = currentClub.sports?.find(sport => {
+      if ('key' in sport) {
+        return sport.key === selectedSport;
+      } else {
+        return sport.slug === selectedSport;
+      }
+    });
+
+    if (!selectedSportData) {
+      return duration === 60 ? '12,95₽' : '19,42₽';
+    }
+
+    // Находим информацию о ценах для выбранного вида спорта
+    const clubSportData = currentClub.clubSports.find(clubSport => 
+      clubSport.sportId === selectedSportData.id && clubSport.available
+    );
+
+    if (!clubSportData || !clubSportData.pricePerHour) {
+      return duration === 60 ? '12,95₽' : '19,42₽';
+    }
+
+    // Рассчитываем цену в зависимости от продолжительности
+    const pricePerHour = clubSportData.pricePerHour; // 2500 рублей в час
+    const pricePerMinute = pricePerHour / 60; // 41.67 рублей в минуту
+    const totalPrice = pricePerMinute * duration;
+    
+    return `${totalPrice.toFixed(0)}₽`;
+  };
+
+  // Функция для проверки, является ли выбранное время последним доступным слотом
+  const isLastAvailableTimeSlot = () => {
+    if (selectedTimes.size === 0) return false;
+    
+    // Получаем доступные временные слоты (исключая последний скрытый)
+    const availableTimeSlots = timeSlots.slice(0, -1);
+    
+    // Проверяем, является ли выбранное время последним доступным
+    const selectedTimeArray = Array.from(selectedTimes);
+    return selectedTimeArray.some(time => time === availableTimeSlots[availableTimeSlots.length - 1]);
   };
 
   // Функция для проверки доступности времени для бронирования
@@ -768,6 +837,25 @@ export default function ClubScheduleScreen()  {
     return true;
   };
 
+  // Функция для проверки доступности временного слота
+  const isTimeSlotAvailable = (time: string) => {
+    // Если нет кортов, считаем слот доступным
+    if (!clubData.courts || clubData.courts.length === 0) {
+      return true;
+    }
+
+    // Проверяем, есть ли хотя бы один корт, доступный для бронирования на это время
+    return clubData.courts.some((court: any) => {
+      // Проверяем доступность для бронирования на 60 минут
+      const isAvailableFor60 = checkBookingAvailability(court, 60);
+      // Проверяем доступность для бронирования на 90 минут
+      const isAvailableFor90 = checkBookingAvailability(court, 90);
+      
+      // Слот доступен, если хотя бы один корт можно забронировать на это время
+      return isAvailableFor60 || isAvailableFor90;
+    });
+  };
+
   // Функция для рендеринга контента в зависимости от активного таба
   const renderTabContent = () => {
     switch (activeTab) {
@@ -810,7 +898,7 @@ export default function ClubScheduleScreen()  {
               
               <View className="flex-row flex-wrap gap-2 py-[5px]">
                 {timeSlots.map((time, index) => (
-                  <TimeSlot key={index} time={time} />
+                  <TimeSlot key={index} time={time} index={index} />
                 ))}
                 </View>
               
@@ -884,24 +972,6 @@ export default function ClubScheduleScreen()  {
                               <Text className="text-base font-medium text-slate-800 mb-1">
                                 {court.name || `Корт ${index + 1}`}
                               </Text>
-                              <View className="flex-col items-start space-x-3">
-                                {court.surface && (
-                                  <View className="flex-row items-center">
-                                    <Text className="text-sm text-gray-500">Покрытие: </Text>
-                                    <Text className="text-sm font-medium text-slate-700 ml-1">
-                                      {court.surface}
-                                    </Text>
-                                  </View>
-                                )}
-                                {court.indoor !== undefined && (
-                                  <View className="flex-row items-center">
-                                    <Text className="text-sm text-gray-500">Тип: </Text>
-                                    <Text className="text-sm font-medium text-slate-700 ml-1">
-                                      {court.indoor ? 'Крытый' : 'Открытый'}
-                                    </Text>
-                                  </View>
-                                )}
-                              </View>
                             </View>
                             <View className="ml-3 flex-row items-center">
                               <Text className="text-gray-400 text-lg">
@@ -915,9 +985,27 @@ export default function ClubScheduleScreen()  {
                         {isExpanded && (
                           <View className="border-t border-gray-100 bg-gray-50 p-4">
                             <View className="space-y-3">
+                              {court.surface && (
+                                <View className="flex-row justify-start items-center">
+                                  <Text className="text-sm text-gray-500 mr-2">Покрытие:</Text>
+                                  <Text className="text-sm font-medium text-slate-700">
+                                    {court.surface}
+                                  </Text>
+                                </View>
+                              )}
+
+                              {court.indoor !== undefined && (
+                                <View className="flex-row justify-start items-center">
+                                  <Text className="text-sm text-gray-500 mr-2">Тип:</Text>
+                                  <Text className="text-sm font-medium text-slate-700">
+                                    {court.indoor ? 'Крытый' : 'Открытый'}
+                                  </Text>
+                                </View>
+                              )}
+
                               {court.lighting !== undefined && (
-                                <View className="flex-row justify-between items-center">
-                                  <Text className="text-sm text-gray-500">Освещение:</Text>
+                                <View className="flex-row justify-start items-center">
+                                  <Text className="text-sm text-gray-500 mr-2">Освещение:</Text>
                                   <Text className="text-sm font-medium text-slate-700">
                                     {court.lighting ? 'Есть' : 'Нет'}
                                   </Text>
@@ -1073,7 +1161,7 @@ export default function ClubScheduleScreen()  {
                                       }}
                                     >
                                       <Text className="text-white text-lg font-bold">
-                                        12,95₽
+                                        {getBookingPrice(60)}
                                       </Text>
                                       <Text className="text-white text-sm">
                                         60 мин
@@ -1081,7 +1169,7 @@ export default function ClubScheduleScreen()  {
                                     </TouchableOpacity>
                                   )}
 
-                                  {checkBookingAvailability(court, 90) && (
+                                  {checkBookingAvailability(court, 90) && !isLastAvailableTimeSlot() && (
                                     <TouchableOpacity
                                       className="bg-blue-600 py-3 px-6 rounded-xl items-center"
                                       onPress={() => {
@@ -1090,7 +1178,7 @@ export default function ClubScheduleScreen()  {
                                       }}
                                     >
                                       <Text className="text-white text-lg font-bold">
-                                        19,42₽
+                                        {getBookingPrice(90)}
                                       </Text>
                                       <Text className="text-white text-sm">
                                         90 мин
@@ -1170,7 +1258,7 @@ export default function ClubScheduleScreen()  {
               
               <View className="flex-row flex-wrap gap-2 py-[5px]">
                 {timeSlots.map((time, index) => (
-                  <TimeSlot key={index} time={time} />
+                  <TimeSlot key={index} time={time} index={index} />
                 ))}
               </View>
             </View>
