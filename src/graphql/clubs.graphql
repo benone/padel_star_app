@@ -4,6 +4,7 @@ query GetClubs {
     name
     city
     district
+    streetAddress
     description
     imagesUrls
     amenities
@@ -27,6 +28,16 @@ query GetClubs {
       active
       equipment
       createdAt
+      updatedAt
+    }
+    clubSports {
+      id
+      available
+      clubId
+      courtsCount
+      createdAt
+      pricePerHour
+      sportId
       updatedAt
     }
     courts {

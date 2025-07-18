@@ -654,11 +654,45 @@ export default function ClubScheduleScreen()  {
     return timeSlotsWithMatches;
   };
 
+  // Функция для получения текущего времени в локальном часовом поясе
+  const getCurrentLocalTime = () => {
+    const now = new Date();
+    
+    // Создаем дату с учетом часового пояса GMT+3
+    const localNow = new Date(now.getTime() + (3 * 60 * 60 * 1000)); // Добавляем 3 часа для GMT+3
+    
+    console.log(`getCurrentLocalTime: UTC=${now.toLocaleString()}, GMT+3=${localNow.toLocaleString()}`);
+    
+    return localNow;
+  };
+
   // Автоматический выбор первого доступного времени при загрузке и изменении даты
   useEffect(() => {
     if (timeSlots.length > 0 && selectedTimes.size === 0) {
-      // Выбираем первое доступное время
-      setSelectedTimes(new Set([timeSlots[0]]));
+      const now = getCurrentLocalTime();
+      
+      const firstAvailableTime = timeSlots.find((time, index) => {
+        if (index === timeSlots.length - 1) return false; // Пропускаем последний слот
+        if (index === 1) return false; // Вторая ячейка заблокирована
+        
+        const [slotHour, slotMinute] = time.split(':').map(Number);
+        
+        // Создаем дату слота в локальном времени с учетом часового пояса GMT+3
+        const slotDate = new Date();
+        slotDate.setFullYear(parseInt(selectedDate.split('-')[0]));
+        slotDate.setMonth(parseInt(selectedDate.split('-')[1]) - 1); // Месяцы начинаются с 0
+        slotDate.setDate(parseInt(selectedDate.split('-')[2]));
+        slotDate.setHours(slotHour, slotMinute, 0, 0);
+        
+        // Добавляем смещение часового пояса GMT+3
+        slotDate.setTime(slotDate.getTime() + (3 * 60 * 60 * 1000));
+        
+        return slotDate >= now;
+      });
+      
+      if (firstAvailableTime) {
+        setSelectedTimes(new Set([firstAvailableTime]));
+      }
     }
   }, [timeSlots, selectedDate]);
 
@@ -668,13 +702,40 @@ export default function ClubScheduleScreen()  {
     const isDisabled = index === 1; // Вторая ячейка (индекс 1) будет недоступна
     const isLastSlot = index === timeSlots.length - 1; // Последняя ячейка
 
+    // Проверяем, прошло ли уже это время сегодня
+    const isTimePast = () => {
+      const [slotHour, slotMinute] = time.split(':').map(Number);
+      
+      // Создаем дату слота в локальном времени с учетом часового пояса GMT+3
+      const slotDate = new Date();
+      slotDate.setFullYear(parseInt(selectedDate.split('-')[0]));
+      slotDate.setMonth(parseInt(selectedDate.split('-')[1]) - 1); // Месяцы начинаются с 0
+      slotDate.setDate(parseInt(selectedDate.split('-')[2]));
+      slotDate.setHours(slotHour, slotMinute, 0, 0);
+      
+      // Добавляем смещение часового пояса GMT+3
+      slotDate.setTime(slotDate.getTime() + (3 * 60 * 60 * 1000));
+      
+      // Получаем текущее время в локальном часовом поясе
+      const now = getCurrentLocalTime();
+      
+      // Слот считается прошедшим, если его время меньше или равно текущему
+      const isPast = slotDate <= now;
+      
+      console.log(`isTimePast ${time}: slotDate=${slotDate.toLocaleString()}, now=${now.toLocaleString()}, isPast=${isPast}`);
+      
+      return isPast;
+    };
+
+    const isSlotDisabled = isDisabled || isTimePast();
+
     // Скрываем последнюю ячейку полностью
     if (isLastSlot) {
       return null;
     }
 
     const handlePress = () => {
-      if (isDisabled) return; // Блокируем нажатие для недоступной ячейки
+      if (isSlotDisabled) return; // Блокируем нажатие для недоступной ячейки
       
       setSelectedTimes(prev => {
         if (prev.has(time)) {
@@ -686,15 +747,17 @@ export default function ClubScheduleScreen()  {
     };
 
     const isAvailable = isTimeSlotAvailable(time);
+    
     // Скрываем недоступные и заблокированные слоты, если включен переключатель
-    if (hideUnavailableSlots && (!isAvailable || isDisabled) && !isSelected) {
+    // Исключаем из скрытия только если слот выбран И доступен
+    if (hideUnavailableSlots && (!isAvailable || isSlotDisabled)) {
       return null;
     }
 
     return (
       <Pressable 
         className={`h-12 rounded-lg w-[85px] items-center justify-center relative ${
-          isDisabled
+          isSlotDisabled
             ? 'bg-gray-200 border border-gray-300 opacity-50'
             : isSelected 
             ? 'bg-slate-800' 
@@ -703,10 +766,10 @@ export default function ClubScheduleScreen()  {
             : 'bg-gray-100 border border-gray-200'
         }`}
         onPress={handlePress}
-        disabled={isDisabled}
+        disabled={isSlotDisabled}
       >
         <Text className={`text-base font-medium ${
-          isDisabled
+          isSlotDisabled
             ? 'text-gray-500 line-through'
             : isSelected 
             ? 'text-white' 
@@ -806,7 +869,12 @@ export default function ClubScheduleScreen()  {
     // Проверяем каждое выбранное время
     for (const selectedTime of selectedTimes) {
       const [selectedHour, selectedMinute] = selectedTime.split(':').map(Number);
-      const bookingStartTime = new Date(selectedDate);
+      
+      // Создаем дату бронирования в локальном времени
+      const bookingStartTime = new Date();
+      bookingStartTime.setFullYear(parseInt(selectedDate.split('-')[0]));
+      bookingStartTime.setMonth(parseInt(selectedDate.split('-')[1]) - 1); // Месяцы начинаются с 0
+      bookingStartTime.setDate(parseInt(selectedDate.split('-')[2]));
       bookingStartTime.setHours(selectedHour, selectedMinute, 0, 0);
       
       const bookingEndTime = new Date(bookingStartTime.getTime() + duration * 60 * 1000);
@@ -821,6 +889,7 @@ export default function ClubScheduleScreen()  {
           return false;
         }
 
+        // Используем оригинальную дату матча, так как она уже в правильном формате
         const matchStartTime = new Date(match.matchDate);
         const matchDuration = match.duration || 60;
         const matchEndTime = new Date(matchStartTime.getTime() + matchDuration * 60 * 1000);

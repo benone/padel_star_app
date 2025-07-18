@@ -1208,7 +1208,7 @@ export type LoginPlayerMutation = { __typename?: 'Mutation', loginPlayer?: { __t
 export type GetClubsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetClubsQuery = { __typename?: 'Query', clubs: Array<{ __typename?: 'Club', id: string, name: string, city?: string | null, district?: string | null, description?: string | null, imagesUrls: Array<string>, amenities?: any | null, rating?: number | null, reviewCount: number, phone?: string | null, email?: string | null, website?: string | null, latitude?: number | null, longitude?: number | null, workingHours?: any | null, sports: Array<{ __typename?: 'Sport', id: string, name: string, slug: string, description?: string | null, icon?: string | null, minPlayers: number, maxPlayers: number, typicalDuration?: number | null, popular: boolean, active: boolean, equipment?: any | null, createdAt: any, updatedAt: any }>, courts: Array<{ __typename?: 'Court', id: string, clubId: string, clubSportId: string, name: string, surface?: string | null, indoor: boolean, lighting: boolean, status: string, maintenanceNotes?: string | null, createdAt: any, updatedAt: any, matches: Array<{ __typename?: 'Match', id: string, bookingId?: string | null, cancellationPolicy?: string | null, cancelledAt?: any | null, clubId: string, competitive: boolean, courtBooked: boolean, courtId?: string | null, createdAt: any, description?: string | null, duration: number, durationPlayed?: number | null, finalScore?: string | null, genderPreference?: string | null, levelMax?: number | null, levelMin?: number | null, levelName?: string | null, matchDate: any, matchType?: string | null, organizerId: string, playersNeeded: number, pricePerPerson?: number | null, sportId: string, spotsAvailable: number, status: string, totalPlayers: number, updatedAt: any, winnerTeam?: string | null }> }> }> };
+export type GetClubsQuery = { __typename?: 'Query', clubs: Array<{ __typename?: 'Club', id: string, name: string, city?: string | null, district?: string | null, streetAddress?: string | null, description?: string | null, imagesUrls: Array<string>, amenities?: any | null, rating?: number | null, reviewCount: number, phone?: string | null, email?: string | null, website?: string | null, latitude?: number | null, longitude?: number | null, workingHours?: any | null, sports: Array<{ __typename?: 'Sport', id: string, name: string, slug: string, description?: string | null, icon?: string | null, minPlayers: number, maxPlayers: number, typicalDuration?: number | null, popular: boolean, active: boolean, equipment?: any | null, createdAt: any, updatedAt: any }>, clubSports: Array<{ __typename?: 'ClubSport', id: string, available: boolean, clubId: string, courtsCount: number, createdAt: any, pricePerHour: number, sportId: string, updatedAt: any }>, courts: Array<{ __typename?: 'Court', id: string, clubId: string, clubSportId: string, name: string, surface?: string | null, indoor: boolean, lighting: boolean, status: string, maintenanceNotes?: string | null, createdAt: any, updatedAt: any, matches: Array<{ __typename?: 'Match', id: string, bookingId?: string | null, cancellationPolicy?: string | null, cancelledAt?: any | null, clubId: string, competitive: boolean, courtBooked: boolean, courtId?: string | null, createdAt: any, description?: string | null, duration: number, durationPlayed?: number | null, finalScore?: string | null, genderPreference?: string | null, levelMax?: number | null, levelMin?: number | null, levelName?: string | null, matchDate: any, matchType?: string | null, organizerId: string, playersNeeded: number, pricePerPerson?: number | null, sportId: string, spotsAvailable: number, status: string, totalPlayers: number, updatedAt: any, winnerTeam?: string | null }> }> }> };
 
 export type GetClubQueryVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -1396,6 +1396,7 @@ export const GetClubsDocument = gql`
     name
     city
     district
+    streetAddress
     description
     imagesUrls
     amenities
@@ -1419,6 +1420,16 @@ export const GetClubsDocument = gql`
       active
       equipment
       createdAt
+      updatedAt
+    }
+    clubSports {
+      id
+      available
+      clubId
+      courtsCount
+      createdAt
+      pricePerHour
+      sportId
       updatedAt
     }
     courts {

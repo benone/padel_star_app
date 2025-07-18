@@ -66,6 +66,7 @@ interface ClubCardProps {
     name: string;
     city?: string | null;
     district?: string | null;
+    streetAddress?: string | null;
     description?: string | null;
     imagesUrls: string[];
     rating?: number | null;
@@ -78,6 +79,7 @@ interface ClubCardProps {
     latitude?: number | null;
     longitude?: number | null;
     courts?: any | null;
+    clubSports?: any[] | null;
   };
   index: number;
   isLiked: boolean;
@@ -88,9 +90,23 @@ function ClubCard({ club, index, isLiked, onToggleLike, ...props }: ClubCardProp
   const router = useRouter();
   const clubImage = clubImages[index % clubImages.length];
   const timeSlots = index === 0 ? ['12:00'] : index === 1 ? ['14:30', '16:00'] : index === 2 ? ['13:00', '15:30', '17:00'] : ['11:00', '18:30'];
-  const prices = ['1200₽', '1500₽', '1800₽', '2000₽'];
-  const distances = ['2км - Черная речка', '5км - Академическая', '1.2км - Дыбенко', '8км - Купчино'];
-  const timeFroms = ['1ч от', '45мин от', '20мин от', '35мин от'];  
+  const timeFroms = ['1ч от', '45мин от', '20мин от', '35мин от'];
+  
+  // Функция для получения самой низкой цены из clubSports
+  const getLowestPrice = () => {
+    if (!club.clubSports || club.clubSports.length === 0) {
+      return 'от 2000₽'; // Дефолтная цена, если нет данных
+    }
+    
+    // Находим минимальную цену среди доступных видов спорта
+    const availableSports = club.clubSports.filter((clubSport: any) => clubSport.available);
+    if (availableSports.length === 0) {
+      return 'от 2000₽'; // Дефолтная цена, если нет доступных видов спорта
+    }
+    
+    const minPrice = Math.min(...availableSports.map((clubSport: any) => clubSport.pricePerHour || 1200));
+    return `${minPrice}₽`;
+  };  
   return (
     <Pressable 
       className="bg-white rounded-2xl mb-4 mx-4 shadow-sm border border-gray-200 overflow-hidden"
@@ -149,15 +165,24 @@ function ClubCard({ club, index, isLiked, onToggleLike, ...props }: ClubCardProp
             {club.name}
           </Text>
           <Text className="text-xl font-bold text-gray-900">
-            {prices[index % prices.length]}
+            {getLowestPrice()}
           </Text>
         </View>
         
-        {/* Location */}
-        <Text className="text-base text-gray-500 mb-6">
-          {distances[index % distances.length]}
-        </Text>
+        {/* City and District */}
+        {(club.city || club.district) && (
+          <Text className="text-base text-gray-500 mb-2">
+            {club.city}{club.city && club.district ? ' - ' : ''}{club.district}
+          </Text>
+        )}
         
+        {/* Street Address */}
+        {club.streetAddress && (
+          <Text className="text-base text-gray-500 mb-6">
+            {club.streetAddress}
+          </Text>
+        )}
+          
         {/* Time Slots */}
         <View className="flex-row gap-2">
           {timeSlots.map((time, timeIndex) => (
